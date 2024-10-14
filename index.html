@@ -149,15 +149,15 @@
 						<a class="nav-link link text-black display-4" href="https://hopeandheal.co.in">Home</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link link text-black display-4" href="https://hopeandheal.co.in" aria-expanded="false">About</a>
+						<a class="nav-link link text-black display-4" href="/#about" aria-expanded="false">About</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link link text-black display-4" href="https://hopeandheal.co.in">Contact</a>
+						<a class="nav-link link text-black display-4" href="/#contact">Contact</a>
 					</li>
 				</ul>
 				
 				<div class="navbar-buttons mbr-section-btn">
-					<a class="btn btn-primary display-4" href="https://hopeandheal.co.in">Get Started</a>
+					<a class="btn btn-primary display-4" href="/#appointment">Appointment</a>
 				</div>
 			</div>
 		</div>
@@ -176,7 +176,7 @@
         
         <p class="mbr-fonts-style mbr-text mbr-white mb-4 display-7">Transforming Lives with Compassionate Homoeopathic Care</p>
         <div class="mbr-section-btn">
-          <a class="btn btn-white-outline display-7" href="https://hopeandheal.co.in">Book Now</a>
+          <a class="btn btn-white-outline display-7" href="/#appointment">Book Now</a>
         </div>
       </div>
     </div>
@@ -252,7 +252,7 @@
 
   
   
-  <div class="container">
+  <div id="about" class="container">
     <div class="row justify-content-center">
       <div class="card col-md-12 col-lg-10">
         <div class="card-wrapper">
@@ -865,40 +865,38 @@
                 </div>
             </div>
         </div>
-        <div class="row justify-content-center">
-            <div class="col-lg-8 mx-auto mbr-form" data-form-type="formoid">
-                <form action="https://hopeandheal.eu/" method="POST" class="mbr-form form-with-styler" data-form-title="Form Name"><input type="hidden" name="email" data-form-email="true" value="WQHHVGzxXMWZYdfi2FkaEoCtOcQn+doBzDJsQk0JkWgr0ZzO0jSBS6qv7xoqyp1TqjROBQa60PkAxAfo2x+qIPy4Nq1jLLctK3sP2p0cDM080Zvjs6l8oIEGo5FOcA+A">
-                    <div class="row">
-                        <div hidden="hidden" data-form-alert="" class="alert alert-success col-12">Thanks for filling out the form!</div>
-                        <div hidden="hidden" data-form-alert-danger="" class="alert alert-danger col-12">
-                            Oops...! some problem!
-                        </div>
-                    </div>
-                    <div class="dragArea row">
-                        <div class="col-md col-sm-12 form-group mb-3" data-for="name">
-                            <input type="text" name="name" placeholder="Name" data-form-field="name" class="form-control" value="" id="name-contact-form-2-uqUIPDi5sx">
-                        </div>
-                        <div class="col-md col-sm-12 form-group mb-3" data-for="email">
-                            <input type="email" name="email" placeholder="Email" data-form-field="email" class="form-control" value="" id="email-contact-form-2-uqUIPDi5sx">
-                        </div>
-                        <div class="col-12 form-group mb-3" data-for="textarea">
-                            <textarea name="textarea" placeholder="Message" data-form-field="textarea" class="form-control" id="textarea-contact-form-2-uqUIPDi5sx"></textarea>
-                        </div>
-                        <div class="col-lg-12 col-md-12 col-sm-12 align-center mbr-section-btn">
-                            <button type="submit" class="btn btn-primary display-7">Send It!</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+        <!-- Your form -->
+        <div id="appointment" class="row justify-content-center">
+          <div class="col-lg-8 mx-auto mbr-form" data-form-type="formoid">
+              <form id="contact-form" class="mbr-form form-with-styler" data-form-title="Form Name">
+                  <div class="row">
+                      <div hidden="hidden" data-form-alert="" class="alert alert-success col-12">Thanks for filling out the form!</div>
+                      <div hidden="hidden" data-form-alert-danger="" class="alert alert-danger col-12">Oops...! some problem!</div>
+                  </div>
+                  <div class="dragArea row">
+                      <div class="col-md col-sm-12 form-group mb-3">
+                          <input type="text" name="name" placeholder="Name" class="form-control" id="name" required>
+                      </div>
+                      <div class="col-md col-sm-12 form-group mb-3">
+                          <input type="email" name="email" placeholder="Email" class="form-control" id="email" required>
+                      </div>
+                      <div class="col-12 form-group mb-3">
+                          <textarea name="message" placeholder="Message" class="form-control" id="message" required></textarea>
+                      </div>
+                      <div class="col-lg-12 col-md-12 col-sm-12 align-center mbr-section-btn">
+                          <button type="button" class="btn btn-primary display-7" onclick="sendEmail()">Send It!</button>
+                      </div>
+                  </div>
+              </form>
+          </div>
         </div>
-    </div>
 </section>
 
 <section data-bs-version="5.1" class="contacts03 cid-uqUIPDiEca" id="contacts-11-uqUIPDiEca">
   
 
   
-  <div class="container">
+  <div id="contact" class="container">
     <div class="row justify-content-center">
       <div class="col-lg-4">
         <div class="col-12 col-md-12">
@@ -957,3 +955,31 @@
 
 <!-- Mirrored from 786896.hopeandhealsite.com/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 11 Oct 2024 16:41:59 GMT -->
 </html>
+
+<!-- JavaScript to send email -->
+<script type="text/javascript">
+  function sendEmail() {
+      var templateParams = {
+          name: document.getElementById("name").value,
+          email: document.getElementById("email").value,
+          message: document.getElementById("message").value,
+      };
+
+      emailjs.send("service_s8e7c5z", "template_peumg3c", templateParams)
+          .then(function(response) {
+              console.log("SUCCESS!", response.status, response.text);
+              alert("Email sent successfully!");
+          }, function(error) {
+              console.log("FAILED...", error);
+              alert("Failed to send email. Please try again later.");
+          });
+  }
+</script>
+<!-- Add EmailJS SDK -->
+<script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
+
+<script type="text/javascript">
+  (function(){
+     emailjs.init("_V9iJ5oAu9BDUAd2K"); // Replace with your EmailJS public key
+  })();
+</script>
