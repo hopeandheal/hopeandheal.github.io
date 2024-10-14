@@ -19,10 +19,42 @@
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Brygada+1918:wght@400;700&amp;display=swap&amp;display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Brygada+1918:wght@400;700&amp;display=swap&amp;display=swap"></noscript>
   <link rel="stylesheet" href="../assets/css/mbr-additionald3c6.css?rnd=1728664719626" type="text/css">
-  
-  
-  
-  
+  <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
+<script type="text/javascript">
+    (function() {
+        emailjs.init("_V9iJ5oAu9BDUAd2K"); // Your EmailJS public key
+    })();
+
+    function sendEmail() {
+        // Validate required fields
+        var name = document.getElementById("name").value;
+        var email = document.getElementById("email").value;
+        var message = document.getElementById("message").value;
+
+        if (!name || !email || !message) {
+            alert("Please fill in all required fields.");
+            return; // Stop the function if validation fails
+        }
+
+        var templateParams = {
+            name: name,
+            email: email,
+            message: message,
+        };
+
+        emailjs.send("service_s8e7c5z", "template_peumg3c", templateParams) // Your EmailJS service and template IDs
+            .then(function(response) {
+                console.log("SUCCESS!", response.status, response.text);
+                // Display success message
+                alert("Email sent successfully!");
+                // Clear the form fields
+                document.getElementById("contact-form").reset();
+            }, function(error) {
+                console.log("FAILED...", error);
+                alert("Failed to send email. Please try again later.");
+            });
+    }
+</script>
 
 <style>
 .navbar-fixed-top {
@@ -889,7 +921,7 @@
                   </div>
               </form>
           </div>
-        </div>
+      </div>
 </section>
 
 <section data-bs-version="5.1" class="contacts03 cid-uqUIPDiEca" id="contacts-11-uqUIPDiEca">
@@ -955,31 +987,3 @@
 
 <!-- Mirrored from 786896.hopeandhealsite.com/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 11 Oct 2024 16:41:59 GMT -->
 </html>
-
-<!-- JavaScript to send email -->
-<script type="text/javascript">
-  function sendEmail() {
-      var templateParams = {
-          name: document.getElementById("name").value,
-          email: document.getElementById("email").value,
-          message: document.getElementById("message").value,
-      };
-
-      emailjs.send("service_s8e7c5z", "template_peumg3c", templateParams)
-          .then(function(response) {
-              console.log("SUCCESS!", response.status, response.text);
-              alert("Email sent successfully!");
-          }, function(error) {
-              console.log("FAILED...", error);
-              alert("Failed to send email. Please try again later.");
-          });
-  }
-</script>
-<!-- Add EmailJS SDK -->
-<script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
-
-<script type="text/javascript">
-  (function(){
-     emailjs.init("_V9iJ5oAu9BDUAd2K"); // Replace with your EmailJS public key
-  })();
-</script>
