@@ -20,42 +20,43 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Brygada+1918:wght@400;700&amp;display=swap&amp;display=swap"></noscript>
   <link rel="stylesheet" href="../assets/css/mbr-additionald3c6.css?rnd=1728664719626" type="text/css">
   <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
-<script type="text/javascript">
-    (function() {
-        emailjs.init("_V9iJ5oAu9BDUAd2K"); // Your EmailJS public key
-    })();
+  <script type="text/javascript">
+      (function() {
+          emailjs.init("_V9iJ5oAu9BDUAd2K"); // Your EmailJS public key
+      })();
 
-    function sendEmail() {
-        // Validate required fields
-        var name = document.getElementById("name").value;
-        var email = document.getElementById("email").value;
-        var message = document.getElementById("message").value;
+      function sendEmail() {
+          // Validate required fields
+          var name = document.getElementById("name").value;
+          var email = document.getElementById("email").value;
+          var phone = document.getElementById("phone").value;
+          var message = document.getElementById("message").value;
 
-        if (!name || !email || !message) {
-            alert("Please fill in all required fields.");
-            return; // Stop the function if validation fails
-        }
+          if (!name || !email || !phone || !message) {
+              alert("Please fill in all required fields.");
+              return; // Stop the function if validation fails
+          }
 
-        var templateParams = {
-            name: name,
-            email: email,
-            message: message,
-        };
+          var templateParams = {
+              name: name,
+              email: email,
+              phone: phone,
+              message: message,
+          };
 
-        emailjs.send("service_s8e7c5z", "template_peumg3c", templateParams) // Your EmailJS service and template IDs
-            .then(function(response) {
-                console.log("SUCCESS!", response.status, response.text);
-                // Display success message
-                alert("Email sent successfully!");
-                // Clear the form fields
-                document.getElementById("contact-form").reset();
-            }, function(error) {
-                console.log("FAILED...", error);
-                alert("Failed to send email. Please try again later.");
-            });
-    }
-</script>
-
+          emailjs.send("service_s8e7c5z", "template_peumg3c", templateParams) // Your EmailJS service and template IDs
+              .then(function(response) {
+                  console.log("SUCCESS!", response.status, response.text);
+                  // Display success message
+                  alert("Email sent successfully!");
+                  // Clear the form fields
+                  document.getElementById("contact-form").reset();
+              }, function(error) {
+                  console.log("FAILED...", error);
+                  alert("Failed to send email. Please try again later.");
+              });
+      }
+  </script>
 <style>
 .navbar-fixed-top {
   top: auto;
@@ -911,6 +912,9 @@
                       </div>
                       <div class="col-md col-sm-12 form-group mb-3">
                           <input type="email" name="email" placeholder="Email" class="form-control" id="email" required>
+                      </div>
+                      <div class="col-md col-sm-12 form-group mb-3">
+                          <input type="tel" name="phone" placeholder="Phone Number" class="form-control" id="phone" required>
                       </div>
                       <div class="col-12 form-group mb-3">
                           <textarea name="message" placeholder="Message" class="form-control" id="message" required></textarea>
