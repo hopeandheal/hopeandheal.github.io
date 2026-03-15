@@ -75,24 +75,42 @@ function validatePayload(body) {
     return null;
 }
 
+function buildDayBreakdown(items) {
+    const byDay = {};
+    items.forEach(i => {
+        const day = i.day || 'Products';
+        if (!byDay[day]) byDay[day] = [];
+        byDay[day].push(`${i.name} x${i.qty || 1}`);
+    });
+
+    return Object.entries(byDay)
+        .map(([day, lines]) => `📅 ${day.toUpperCase()}\n${lines.map(l => `   • ${l}`).join('\n')}`)
+        .join('\n\n');
+}
+
 async function sendTelegram(customer, items, paymentId, total) {
     const TG_TOKEN = process.env.TG_BOT_TOKEN;
     const TG_CHAT = process.env.TG_CHAT_ID;
     if (!TG_TOKEN || !TG_CHAT) return;
 
     const isDelivery = customer.type === 'delivery';
-    const cleanPhone = sanitise(customer.phone).replace(/\D/g, '').replace(/^0/, '91'); // India default
-    const treatments = items.map(i => `• ${i.name} x${i.qty || 1} (₹${i.price})`).join('\n');
+    const cleanPhone = sanitise(customer.phone).replace(/\D/g, '');
+    const waPhone = cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone;
+    const waText = encodeURIComponent(`Hello ${customer.name.split(' ')[0]}, your Hope & Heal order ${paymentId} is received!`);
+    
+    const breakdown = buildDayBreakdown(items);
 
     const msg =
-        `📦 *NEW ORDER* 📦\n\n` +
-        `👤 *Customer*: ${sanitise(customer.name)}\n` +
+        `🌿 *NEW CLINIC ORDER* 🌿\n\n` +
+        `👤 *Patient*: ${sanitise(customer.name)}\n` +
         `📞 *Phone*: ${sanitise(customer.phone)}\n` +
-        `📍 *Address*: ${sanitise(isDelivery ? customer.address : 'Pickup')}\n` +
+        `💬 [WhatsApp](https://wa.me/${waPhone}?text=${waText})\n` +
+        `📍 *Type*: ${sanitise(isDelivery ? 'Home Delivery' : 'Clinic Pickup')}\n` +
+        `🏠 *Address*: ${sanitise(isDelivery ? customer.address : 'Rajkot Clinic')}\n` +
         `💳 *Payment*: ${sanitise(customer.paymentMethod || 'online')}\n\n` +
-        `🛍️ *Products*:\n${treatments}\n\n` +
+        `📋 *Treatments*:\n${breakdown}\n\n` +
         `💰 *Total*: ₹${Number(total).toFixed(2)}\n` +
-        `🆔 *Order Ref*: \`${sanitise(paymentId)}\``;
+        `🆔 *Ref*: \`${sanitise(paymentId)}\``;
 
     await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
         method: 'POST',
@@ -137,6 +155,8 @@ export default async function handler(req, res) {
     const { customer, items, paymentId, total, deliveryCost } = req.body;
     log.info('appointment_received', { customer: customer.name, paymentId });
 
+    const breakdown = buildDayBreakdown(items);
+
     // ── 1. Telegram
     try { await sendTelegram(customer, items, paymentId, total); } catch (e) { log.error('telegram_failed', { e: e.message }); }
 
@@ -147,12 +167,12 @@ export default async function handler(req, res) {
             await sendEmail(OWNER_TPL, {
                 patient_name: sanitise(customer.name),
                 patient_phone: sanitise(customer.phone),
-                address: sanitise(customer.address || 'Pickup'),
-                type: customer.type === 'delivery' ? 'Home Delivery' : 'Pickup',
-                treatments: items.map(i => `${i.name} x${i.qty || 1}`).join('\n'), // reusing treatments key for template compatibility
+                address: sanitise(customer.address || 'Clinic Pickup'),
+                order_type: customer.type === 'delivery' ? 'Home Delivery' : 'Clinic Pickup',
+                treatments_breakdown: breakdown,
                 total: `₹${Number(total).toFixed(2)}`,
                 payment_id: paymentId,
-                subject: `📦 New Order: ${sanitise(customer.name)}`
+                subject: `🌿 New Order: ${sanitise(customer.name)}`
             }, 'owner');
         } catch (e) { log.error('admin_email_failed', { e: e.message }); }
     }
@@ -164,9 +184,10 @@ export default async function handler(req, res) {
             await sendEmail(PATIENT_TPL, {
                 to_name: sanitise(customer.name).split(' ')[0],
                 to_email: sanitise(customer.email),
-                order_items: items.map(i => `${i.name} x${i.qty || 1}`).join(', '),
-                total: `₹${Number(total).toFixed(2)}`,
-                ref_id: paymentId
+                day_breakdown: breakdown,
+                total_amount: `₹${Number(total).toFixed(2)}`,
+                ref_id: paymentId,
+                subject: `Your Hope & Heal Receipt — ${paymentId}`
             }, 'patient');
         } catch (e) { log.error('patient_email_failed', { e: e.message }); }
     }

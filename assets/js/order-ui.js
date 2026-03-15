@@ -170,9 +170,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 address: esc(addressStr),
                 paymentMethod: payType
             },
-            items: cart.map(i => ({ id: i.id, name: esc(i.name), price: i.price, qty: i.quantity || 1 })),
+            items: cart.map(i => ({
+                id: i.id,
+                name: esc(i.name),
+                price: i.price,
+                qty: i.quantity || 1,
+                day: i.day || 'Products'
+            })),
             deliveryCost: deliveryFee,
-            serviceFee,
             total,
             paymentId: esc(paymentId)
         };
@@ -276,4 +281,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.form-control, .form-select').forEach(el => {
         el.addEventListener('input', () => el.classList.remove('is-invalid'));
     });
+    // ── Mobile UI Helpers ─────────────────────────────────────────────────────
+    window.scrollToCart = function () {
+        const cartEl = document.querySelector('.cart-card');
+        if (!cartEl) return;
+        const navHeight = document.querySelector('.navbar')?.offsetHeight || 80;
+        const targetPos = cartEl.getBoundingClientRect().top + window.pageYOffset - navHeight - 20;
+        window.scrollTo({ top: targetPos, behavior: 'smooth' });
+    };
 });
