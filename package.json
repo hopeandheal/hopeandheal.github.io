@@ -1,0 +1,18 @@
+{
+    "name": "hopeandheal-site",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "node api/dev-server.js",
+        "build": "npx terser assets/js/order-ui.js -o assets/js/order-ui.min.js --compress --mangle && npx terser assets/js/admin-logic.js -o assets/js/admin-logic.min.js --compress --mangle && npx terser assets/js/cart-logic.js -o assets/js/cart-logic.min.js --compress --mangle && npx terser assets/js/order-logic.js -o assets/js/order-logic.min.js --compress --mangle"
+    },
+    "devDependencies": {
+        "terser": "^5.46.0",
+        "vite": "^7.3.1"
+    },
+    "dependencies": {
+        "busboy": "^1.6.0",
+        "googleapis": "^171.4.0"
+    }
+}

@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    <meta name="robots" content="index, follow">
+    <title>Order Online – Hope & Heal | Homoeopathic Products</title>
+    <meta name="description"
+        content="Order premium homoeopathic remedies and natural care products from Hope & Heal. Fast delivery across India.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Nunito:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.mind3c6.css?v=2">
+    <link rel="stylesheet" href="assets/theme/css/styled3c6.css?v=2">
+    <link rel="stylesheet" href="assets/web/assets/hopeandheal-icons2/hopeandheal2d3c6.css?v=2">
+    <link rel="stylesheet" href="assets/dropdown/css/styled3c6.css?v=2">
+    <link rel="stylesheet" href="assets/css/mbr-additionald3c6.css?v=2">
+    <link rel="stylesheet" href="assets/css/custom.css?v=2.3">
+
+    <style>
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           HOPE & HEAL — PREMIUM ORDER PAGE
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --green: #6b8c00;
+            --green-mid: #8aaf00;
+            --green-light: #a5be00;
+            --green-pale: #f2f6e0;
+            --green-soft: #eef5d0;
+            --cream: #faf9f4;
+            --white: #ffffff;
+            --ink: #1c1e14;
+            --ink-mid: #3d4228;
+            --ink-muted: #7a8360;
+            --border: #dde6bb;
+            --border-soft: #ecf2d0;
+            --shadow-sm: 0 2px 12px rgba(80, 100, 0, .08);
+            --shadow-md: 0 8px 32px rgba(80, 100, 0, .12);
+            --shadow-lg: 0 20px 60px rgba(80, 100, 0, .16);
+            --r-card: 20px;
+            --r-btn: 12px;
+            --r-input: 10px;
+        }
+
+        body {
+            font-family: 'Nunito', system-ui, sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Shop Header — Hero Banner Look ── */
+        .shop-header {
+            background: linear-gradient(160deg, #f8faf2 0%, #edf2e4 100%);
+            border-bottom: 1.5px solid var(--border-soft);
+            text-align: center;
+            padding-top: 8.5rem; /* Space for the floating navbar + extra gap */
+            padding-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shop-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 70% 30%, rgba(138, 175, 0, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .shop-header-inner {
+            padding: 0 1rem 0.6rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .shop-h1 {
+            font-family: 'Cormorant Garamond', 'Playfair Display', serif;
+            font-size: clamp(2.2rem, 3.8vw, 3.2rem);
+            font-weight: 600;
+            color: var(--ink);
+            line-height: 1.1;
+            margin: 0 0 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .shop-tagline {
+            font-size: 0.95rem;
+            color: var(--ink-muted);
+            margin: 0 auto;
+            line-height: 1.6;
+            max-width: 600px;
+        }
+
+        .shop-tagline strong {
+            color: var(--ink-mid);
+            font-weight: 600;
+        }
+
+        .shop-trust-row {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: nowrap;
+            justify-content: center;
+            padding-top: 1rem;
+            margin-top: 0.8rem;
+            border-top: 1px dashed rgba(80, 110, 0, 0.2);
+            width: 100%;
+            overflow-x: auto;
+            white-space: nowrap;
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        .shop-trust-row::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari and Opera */
+        }
+
+        .shop-trust-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.82rem;
+            color: var(--ink-mid);
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .shop-trust-icon {
+            font-size: 1.15rem;
+            line-height: 1;
+            color: var(--green);
+        }
+
+        /* The Banner Accent - below the header */
+        .shop-header-accent {
+            height: 4px;
+            background: linear-gradient(90deg, #8aaf00 0%, #a5be00 50%, #c1d683 100%);
+            position: relative;
+            z-index: 2;
+        }
+
+        @media (max-width: 767px) {
+            .shop-header-inner {
+                padding: 1.25rem 1rem 1rem;
+            }
+
+            .shop-trust-row {
+                gap: 0.8rem;
+                padding-top: 1rem;
+                margin-top: 1rem;
+            }
+
+            .shop-trust-item {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.6rem;
+            }
+
+            .shop-header-right {
+                text-align: left;
+            }
+
+            .shop-pills {
+                justify-content: flex-start;
+            }
+        }
+
+        /* ── Layout ── */
+        .shop-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        @media (max-width: 1024px) {
+            .shop-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── Products section header row ── */
+        .products-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .products-count {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+        }
+
+        .products-sort {
+            font-size: 0.72rem;
+            color: var(--ink-muted);
+            font-weight: 500;
+        }
+
+        /* ━━ PRODUCT CARDS (PLP style) ━━ */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 640px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .product-card {
+            background: var(--white);
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: box-shadow 0.25s ease, border-color 0.2s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 12px 40px rgba(80, 100, 0, 0.1);
+            border-color: var(--border);
+        }
+
+        .product-card.selected {
+            border-color: var(--green-light);
+            box-shadow: 0 0 0 2px rgba(165, 190, 0, 0.25);
+        }
+
+        /* Image area */
+        .product-img-wrap {
+            position: relative;
+            width: 100%;
+            height: 260px;
+            overflow: hidden;
+            background: linear-gradient(150deg, #f0f5e0, #e8f0cc);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.45s ease;
+        }
+
+        .product-card:hover .product-img {
+            transform: scale(1.06);
+        }
+
+        .product-img-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        /* Quick-add hover overlay (Sephora style) */
+        .product-quick-add {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(28, 30, 20, 0.82);
+            backdrop-filter: blur(4px);
+            padding: 0.7rem 1rem;
+            transform: translateY(100%);
+            transition: transform 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+        }
+
+        .product-card:hover .product-quick-add {
+            transform: translateY(0);
+        }
+
+        .product-quick-add.selected-state {
+            background: rgba(42, 122, 48, 0.9);
+        }
+
+        /* In-stock badge */
+        .selected-badge {
+            position: absolute;
+            top: 0.7rem;
+            left: 0.7rem;
+            background: var(--green);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 0.22rem 0.6rem;
+            border-radius: 3px;
+        }
+
+        /* Card body */
+        .product-body {
+            padding: 1rem 1.1rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .product-cat {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--green);
+            margin-bottom: 0.3rem;
+        }
+
+        .product-name {
+            font-family: 'Cormorant Garamond', 'Playfair Display', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--ink);
+            line-height: 1.25;
+            margin-bottom: 0.35rem;
+        }
+
+        .product-desc {
+            font-size: 0.8rem;
+            color: var(--ink-muted);
+            line-height: 1.5;
+            flex: 1;
+            margin-bottom: 0.9rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .product-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--ink);
+            font-family: 'Nunito', sans-serif;
+            line-height: 1;
+        }
+
+        .product-price-note {
+            font-size: 0.68rem;
+            font-weight: 400;
+            color: var(--ink-muted);
+            display: block;
+            margin-top: 0.15rem;
+        }
+
+        /* Inline add button (fallback for when hover overlay isn't used) */
+        .btn-add {
+            background: var(--green-light);
+            color: #fff;
+            border: none;
+            border-radius: var(--r-btn);
+            padding: 0.5rem 1.1rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-add:hover {
+            background: var(--green);
+        }
+
+        .btn-add.btn-add-selected {
+            background: #2a7a30;
+        }
+
+        .btn-add.btn-add-selected:hover {
+            background: #1e5e24;
+        }
+
+        /* ━━ SIDEBAR ━━ */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* Cart card */
+        .cart-card {
+            background: var(--white);
+            border: 1.5px solid var(--border-soft);
+            border-radius: var(--r-card);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .cart-head {
+            background: linear-gradient(120deg, #3d4a00, var(--green-mid));
+            padding: 1.1rem 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cart-head-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            color: #fff;
+            margin: 0;
+        }
+
+        .cart-count {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            min-width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-body {
+            padding: 1.2rem 1.4rem;
+        }
+
+        .cart-empty {
+            text-align: center;
+            padding: 1.5rem 0;
+            font-size: 0.88rem;
+            color: var(--ink-muted);
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .cart-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .cart-item-name {
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: var(--ink);
+            line-height: 1.3;
+            margin-bottom: 0.2rem;
+        }
+
+        .cart-item-sub {
+            font-size: 0.75rem;
+            color: var(--ink-muted);
+        }
+
+        .cart-item-qty-row {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.4rem;
+        }
+
+        .qty-control {
+            display: inline-flex;
+            align-items: center;
+            background: #f6f9f0;
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            padding: 0.15rem 0.2rem;
+        }
+
+        .btn-qty {
+            background: transparent;
+            border: none;
+            color: var(--ink-mid);
+            width: 1.6rem;
+            height: 1.6rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .btn-qty:hover {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .btn-qty:active {
+            transform: scale(0.95);
+        }
+
+        .qty-val {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--ink);
+            min-width: 1.5rem;
+            text-align: center;
+        }
+
+        .cart-item-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .cart-item-price {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .btn-rm {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #c0392b;
+            font-size: 0.85rem;
+            padding: 0;
+            opacity: 0.6;
+            line-height: 1;
+        }
+
+        .btn-rm:hover {
+            opacity: 1;
+        }
+
+        .price-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.86rem;
+            color: var(--ink-muted);
+            padding: 0.28rem 0;
+        }
+
+        .price-line.total {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--ink);
+            border-top: 2px solid var(--border-soft);
+            margin-top: 0.6rem;
+            padding-top: 0.7rem;
+        }
+
+        .price-line.total .val {
+            color: var(--green);
+            font-size: 1.2rem;
+        }
+
+        .btn-checkout {
+            display: block;
+            width: 100%;
+            background: var(--green-light);
+            color: #fff;
+            border: none;
+            border-radius: var(--r-btn);
+            padding: 0.9rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background 0.2s, transform 0.15s, box-shadow 0.15s;
+            text-align: center;
+        }
+
+        .btn-checkout:hover:not(:disabled) {
+            background: var(--green);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(80, 110, 0, 0.28);
+        }
+
+        .btn-checkout:disabled {
+            background: #c8d88a;
+            cursor: not-allowed;
+        }
+
+        /* ━━ CHECKOUT FORM CARD ━━ */
+        .form-card {
+            background: var(--white);
+            border: 1.5px solid var(--border-soft);
+            border-radius: var(--r-card);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-head {
+            background: var(--green-pale);
+            border-bottom: 1.5px solid var(--border);
+            padding: 1rem 1.4rem;
+        }
+
+        .form-head-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--green);
+            margin: 0;
+        }
+
+        .form-body {
+            padding: 1.4rem;
+        }
+
+        /* Field */
+        .f-group {
+            margin-bottom: 1.1rem;
+        }
+
+        .f-label {
+            display: block;
+            font-size: 0.73rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            color: var(--ink-mid);
+            margin-bottom: 0.4rem;
+        }
+
+        .f-input {
+            display: block;
+            width: 100%;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-input);
+            padding: 0.7rem 0.9rem;
+            font-size: 0.92rem;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--ink);
+            background: var(--white);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .f-input::placeholder {
+            color: #b4bb90;
+        }
+
+        .f-input:focus {
+            border-color: var(--green-light);
+            box-shadow: 0 0 0 3px rgba(165, 190, 0, 0.14);
+        }
+
+        .f-input.has-error {
+            border-color: #e53935;
+        }
+
+        .f-error {
+            font-size: 0.76rem;
+            color: #e53935;
+            margin-top: 0.3rem;
+            display: none;
+        }
+
+        .f-error.show {
+            display: block;
+        }
+
+        /* Phone field */
+        .phone-row {
+            display: flex;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-input);
+            overflow: hidden;
+            background: var(--white);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .phone-row:focus-within {
+            border-color: var(--green-light);
+            box-shadow: 0 0 0 3px rgba(165, 190, 0, 0.14);
+        }
+
+        .phone-cc {
+            border: none;
+            outline: none;
+            background: var(--green-pale);
+            border-right: 1.5px solid var(--border);
+            padding: 0 0.7rem;
+            font-size: 0.88rem;
+            color: var(--ink);
+            cursor: pointer;
+            min-width: 80px;
+            max-width: 88px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .phone-num {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 0.7rem 0.75rem;
+            font-size: 0.92rem;
+            font-family: inherit;
+            color: var(--ink);
+            background: transparent;
+        }
+
+        .btn-otp-block {
+            display: block;
+            width: 100%;
+            background: var(--green-light);
+            color: #fff;
+            border: none;
+            border-radius: var(--r-input);
+            padding: 0.7rem 1rem;
+            margin-top: 0.6rem;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: center;
+        }
+
+        .btn-otp-block:hover {
+            background: var(--green);
+        }
+
+        .btn-otp-block:disabled {
+            background: #c8d88a;
+            cursor: not-allowed;
+        }
+
+        /* OTP box */
+        .otp-box {
+            background: var(--green-soft);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-input);
+            padding: 0.9rem 1rem;
+            margin-top: 0.55rem;
+        }
+
+        .otp-hint {
+            font-size: 0.78rem;
+            color: var(--green);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .otp-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .otp-input {
+            flex: 1;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-input);
+            padding: 0.65rem 0.6rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-align: center;
+            background: var(--white);
+            outline: none;
+            transition: border-color 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .otp-input:focus {
+            border-color: var(--green-light);
+        }
+
+        .btn-verify {
+            border: none;
+            outline: none;
+            background: #2a7a30;
+            color: #fff;
+            border-radius: var(--r-input);
+            padding: 0.65rem 1rem;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-verify:hover {
+            background: #1e5e24;
+        }
+
+        .verified-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 12px;
+            padding: 0.28rem 0.85rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+
+        /* Address grid */
+        .addr-grid {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 0.65rem;
+        }
+
+        .addr-grid .full {
+            grid-column: 1 / -1;
+        }
+
+        /* Payment tiles */
+        .pay-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.65rem;
+            margin-top: 0.4rem;
+        }
+
+        .pay-tile {
+            position: relative;
+            border: 2px solid var(--border);
+            border-radius: var(--r-input);
+            padding: 0.85rem 0.9rem;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            background: var(--white);
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .pay-tile input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .pay-tile-icon {
+            font-size: 1.4rem;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .pay-tile-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .pay-tile-sub {
+            font-size: 0.72rem;
+            color: var(--ink-muted);
+            margin-top: 0.1rem;
+        }
+
+        .pay-tile:hover {
+            border-color: var(--green-light);
+        }
+
+        .pay-tile.active {
+            border-color: var(--green-light);
+            background: var(--green-pale);
+        }
+
+        .pay-tile.active .pay-tile-name {
+            color: var(--green);
+        }
+
+        /* Submit */
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(130deg, #3d4a00, var(--green-mid));
+            color: #fff;
+            border: none;
+            border-radius: var(--r-btn);
+            padding: 1.05rem 1rem;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1.25rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(60, 80, 0, 0.3);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .secure-note {
+            text-align: center;
+            font-size: 0.76rem;
+            color: var(--ink-muted);
+            margin-top: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+        }
+
+        /* ── Loading spinner ── */
+        .loader {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--green-light);
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 767px) {
+            .shop-layout {
+                padding: 1.5rem 1rem 3rem;
+            }
+
+            .banner-title {
+                font-size: 1.75rem;
+            }
+
+            .addr-grid,
+            .pay-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <section data-bs-version="5.1" class="menu menu2 cid-uqUIPDaTUN" once="menu" id="menu-5-uqUIPDaTUN">
+        <nav class="navbar navbar-dropdown navbar-fixed-top navbar-expand-lg">
+            <div class="container">
+                <div class="navbar-brand">
+                    <span class="navbar-logo">
+                        <a href="/">
+                            <img src="assets/images/photo-1441205188609-b875e92a9807.jpg" alt="Hope and Heal"
+                                style="height: 4.3rem;">
+                        </a>
+                    </span>
+                    <span class="navbar-caption-wrap"><a class="navbar-caption text-black display-4" href="/">Hope and
+                            Heal</a></span>
+                </div>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-bs-toggle="collapse"
+                    data-target="#navbarSupportedContent" data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                    <div class="hamburger">
+                        <span></span><span></span><span></span><span></span>
+                    </div>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav nav-dropdown" data-app-modern-menu="true">
+                        <li class="nav-item">
+                            <a class="nav-link link text-black display-4" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link link text-black display-4" href="/#about">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link link text-black display-4" href="/#team-1-uqUIPDdYEs">Meet Experts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link link text-black display-4" href="/#contact">Contact</a>
+                        </li>
+                    </ul>
+                    <div class="navbar-buttons mbr-section-btn">
+                        <a class="btn btn-secondary-green display-4 me-2" href="/order">Order Online</a>
+                        <a class="btn btn-primary display-4" href="/#contact">Book Appointment</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </section>
+
+    <!-- Shop Header — minimal premium -->
+    <div class="shop-header">
+        <div class="container">
+            <div class="shop-header-inner">
+                <h1 class="shop-h1">Hope &amp; Heal Products</h1>
+                <p class="shop-tagline">
+                    Experience wellness with our handcrafted homoeopathic remedies,<br> carefully formulated by
+                    <strong>Dr. Nirav &amp; Krushangi Khunt</strong>.
+                </p>
+
+                <div class="shop-trust-row">
+                    <div class="shop-trust-item"><span class="shop-trust-icon">🌿</span> 100% Pure &amp; Natural</div>
+                    <div class="shop-trust-item"><span class="shop-trust-icon">🚚</span> ₹50 delivery within Gujarat
+                    </div>
+                    <div class="shop-trust-item"><span class="shop-trust-icon">📦</span> ₹100 Pan-India shipping</div>
+                    <div class="shop-trust-item"><span class="shop-trust-icon">🔒</span> Secure Checkout</div>
+                </div>
+            </div>
+        </div>
+        <div class="shop-header-accent"></div>
+    </div>
+
+    <!-- ══════ SHOP LAYOUT ══════ -->
+    <div class="shop-layout">
+
+        <!-- Left: Products -->
+        <div>
+            <div class="section-label">Available Products</div>
+            <div class="products-grid" id="treatments-container">
+                <div style="grid-column:1/-1;text-align:center;padding:3rem 0;">
+                    <div class="loader"></div>
+                    <p style="margin-top:1rem;color:var(--ink-muted);font-size:0.88rem;">Loading products…</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Sidebar -->
+        <div class="sidebar">
+
+            <!-- Cart -->
+            <div class="cart-card">
+                <div class="cart-head">
+                    <h2 class="cart-head-title">Your Order</h2>
+                    <span class="cart-count" id="item-count">0</span>
+                </div>
+                <div class="cart-body">
+                    <div id="summary-items">
+                        <div class="cart-empty">Add products to get started</div>
+                    </div>
+                    <div class="border-top mt-2 pt-2" id="price-breakdown" style="display:none;">
+                        <div class="price-line"><span>Subtotal</span><span id="subtotal">₹0.00</span></div>
+                        <div class="price-line"><span>Delivery</span><span id="delivery-charge-span">₹0.00</span>
+                        </div>
+                        <div class="price-line" id="service-fee-row" style="display:none;">
+                            <span>Service fee (2%)</span><span id="service-fee-span">₹0.00</span>
+                        </div>
+                        <div class="price-line total">
+                            <span>Total</span><span class="val" id="total">₹0.00</span>
+                        </div>
+                    </div>
+                    <button class="btn-checkout" id="btn-checkout" disabled>
+                        Checkout →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Checkout Form (shown after clicking Checkout) -->
+            <div class="form-card" id="checkout-section" style="display:none;">
+                <div class="form-head">
+                    <h3 class="form-head-title">Your Details & Delivery</h3>
+                </div>
+                <div class="form-body">
+                    <form id="booking-form" novalidate>
+                        <!-- Hidden: always delivery -->
+                        <input type="hidden" name="visitType" value="delivery">
+
+                        <!-- Name -->
+                        <div class="f-group">
+                            <label class="f-label" for="p-name">Full Name</label>
+                            <input class="f-input" type="text" id="p-name" placeholder="e.g. Jenish Patel"
+                                autocomplete="name" required>
+                            <div class="f-error" id="err-name">Please enter your full name.</div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="f-group">
+                            <label class="f-label" for="p-email">Email Address</label>
+                            <input class="f-input" type="email" id="p-email" placeholder="e.g. hello@example.com"
+                                autocomplete="email" required>
+                            <div class="f-error" id="err-email">Please enter a valid email.</div>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="f-group">
+                            <label class="f-label">Phone Number</label>
+                            <div class="phone-row">
+                                <select class="phone-cc" id="phone-code" aria-label="Country code">
+                                    <option value="+91" selected>🇮🇳 +91</option>
+                                    <option value="+44">🇬🇧 +44</option>
+                                    <option value="+1">🇺🇸 +1</option>
+                                </select>
+                                <input class="phone-num" type="tel" id="phone" placeholder="98765 43210"
+                                    autocomplete="tel" required>
+                            </div>
+                            <button class="btn-otp-block" type="button" id="btn-send-otp">Send OTP to
+                                verify</button>
+                            <div class="f-error" id="err-phone">Enter a valid phone number.</div>
+
+                            <!-- OTP -->
+                            <div class="otp-box" id="otp-section" style="display:none;">
+                                <div class="otp-hint">🔐 OTP sent — enter it below to verify</div>
+                                <div class="otp-row">
+                                    <input class="otp-input" type="text" id="otp-input" placeholder="• • • •"
+                                        maxlength="4" inputmode="numeric">
+                                    <button class="btn-verify" type="button" id="btn-verify-otp">Verify ✓</button>
+                                </div>
+                            </div>
+                            <div id="otp-success-msg"></div>
+                            <input type="hidden" id="is-phone-verified" value="false">
+                        </div>
+
+                        <!-- Order Type Toggle -->
+                        <div class="f-group">
+                            <label class="f-label">Order Type</label>
+                            <div class="pay-grid">
+                                <label class="pay-tile active" id="tile-delivery">
+                                    <input type="radio" name="orderType" id="typeDelivery" value="delivery" checked>
+                                    <span class="pay-tile-icon">🚚</span>
+                                    <div class="pay-tile-name">Home Delivery</div>
+                                    <div class="pay-tile-sub">Direct to your door</div>
+                                </label>
+                                <label class="pay-tile" id="tile-pickup">
+                                    <input type="radio" name="orderType" id="typePickup" value="pickup">
+                                    <span class="pay-tile-icon">📍</span>
+                                    <div class="pay-tile-name">Clinic Pickup</div>
+                                    <div class="pay-tile-sub">Collect from Rajkot</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Address -->
+                        <div class="f-group" id="delivery-address-section">
+                            <label class="f-label">Delivery Address</label>
+                            <div class="addr-grid">
+                                <div class="full">
+                                    <input class="f-input" type="text" id="p-address-street"
+                                        placeholder="House No / Street / Landmark" autocomplete="address-line1"
+                                        required>
+                                    <div class="f-error" id="err-street">Enter your street address.</div>
+                                </div>
+                                <div>
+                                    <input class="f-input" type="text" id="p-address-city" placeholder="City"
+                                        autocomplete="address-level2" required>
+                                    <div class="f-error" id="err-city">Enter city.</div>
+                                </div>
+                                <div>
+                                    <input class="f-input" type="text" id="p-address-pin" placeholder="Pincode"
+                                        inputmode="numeric" maxlength="6" required>
+                                    <div class="f-error" id="err-pin">Enter pincode.</div>
+                                </div>
+                                <div class="full">
+                                    <div style="position:relative;">
+                                        <select class="f-input" id="p-address-state"
+                                            style="-webkit-appearance:none;appearance:none;padding-right:2rem;cursor:pointer;"
+                                            required>
+                                            <option value="Gujarat" selected>Gujarat — ₹50 delivery</option>
+                                            <option value="Rajasthan">Rajasthan — ₹100</option>
+                                            <option value="Maharashtra">Maharashtra — ₹100</option>
+                                            <option value="Madhya Pradesh">Madhya Pradesh — ₹100</option>
+                                            <option value="Delhi">Delhi — ₹100</option>
+                                            <option value="Uttar Pradesh">Uttar Pradesh — ₹100</option>
+                                            <option value="Karnataka">Karnataka — ₹100</option>
+                                            <option value="Tamil Nadu">Tamil Nadu — ₹100</option>
+                                            <option value="West Bengal">West Bengal — ₹100</option>
+                                            <option value="Other">Other State — ₹100</option>
+                                        </select>
+                                        <span
+                                            style="position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--ink-muted);font-size:0.75rem;">▾</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment -->
+                        <div class="f-group">
+                            <label class="f-label">Payment Method</label>
+                            <div class="pay-grid">
+                                <label class="pay-tile active" id="tile-online">
+                                    <input type="radio" name="payType" id="payOnline" value="online" checked>
+                                    <span class="pay-tile-icon">📱</span>
+                                    <div class="pay-tile-name">UPI / Card</div>
+                                    <div class="pay-tile-sub">+2% processing fee</div>
+                                </label>
+                                <label class="pay-tile" id="tile-cod">
+                                    <input type="radio" name="payType" id="payCod" value="cod">
+                                    <span class="pay-tile-icon">💵</span>
+                                    <div class="pay-tile-name">Cash on Delivery</div>
+                                    <div class="pay-tile-sub">No extra charge</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <button type="submit" class="btn-submit">
+                            Place Order — <span id="btn-total">₹0.00</span>
+                        </button>
+                        <div class="secure-note">🔒 Safe &amp; secure checkout</div>
+                    </form>
+                </div>
+            </div>
+
+        </div><!-- end sidebar -->
+    </div><!-- end shop-layout -->
+
+    <!-- ══════ SUCCESS MODAL ══════ -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg text-center px-4 py-5">
+                <div style="font-size:3.5rem;margin-bottom:1rem;">🎉</div>
+                <h2 style="font-family:'Playfair Display',serif;font-weight:700;" class="mb-2">Order Placed!</h2>
+                <p class="text-muted mb-1">Thank you for choosing Hope &amp; Heal.</p>
+                <p class="mb-4">Reference: <strong style="color:var(--green);" id="ref-id"></strong></p>
+                <p class="text-muted small mb-4">We'll confirm via WhatsApp / call shortly.</p>
+                <a href="/order" class="btn btn-primary px-5 py-2 fw-bold" style="border-radius: 12px !important;">Order
+                    Again / View
+                    Products</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ FOOTER ══════ -->
+    <section data-bs-version="5.1" class="footer4 cid-uqUIPDiNEY" once="footers" id="footer-4-uqUIPDiNEY">
+        <div class="container">
+            <div class="media-container-row align-center mbr-white">
+                <div class="col-12">
+                    <p class="mbr-text mb-0 mbr-fonts-style display-4" style="color:#232323;">
+                        © 2026 Hope and Heal Homoeopathy. All rights reserved. |
+                        <a href="/admin.html" style="color:rgba(0,0,0,0.5);">Admin</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="assets/web/assets/jquery/jquery.mind3c6.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.bundle.mind3c6.js"></script>
+    <script src="assets/dropdown/js/navbar-dropdownd3c6.js"></script>
+    <script src="assets/js/order-logic.js?v=1.4"></script>
+    <script src="assets/js/cart-logic.js?v=1.4"></script>
+    <script src="assets/js/order-ui.js?v=1.4"></script>
+
+    <!-- Floating Mobile Cart Bar (visible only on mobile when items in cart) -->
+    <div id="mobile-cart-bar" onclick="document.querySelector('.cart-card').scrollIntoView({behavior:'smooth'})" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:1040;
+               background: linear-gradient(135deg, #6b8c00, #8aaf00); color:#fff;
+               padding: 12px 20px; cursor:pointer;
+               box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
+               border-radius: 16px 16px 0 0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; max-width:500px; margin:0 auto;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="background:rgba(255,255,255,0.25); border-radius:50%; width:32px; height:32px;
+                             display:flex; align-items:center; justify-content:center; font-size:1.1rem;">🛒</span>
+                <span id="mobile-cart-count" class="fw-bold" style="font-size:0.95rem;">0 items</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span id="mobile-cart-total" class="fw-bold" style="font-size:1.1rem;">₹0.00</span>
+                <span
+                    style="background:#fff; color:#6b8c00; border-radius:8px; padding:4px 12px; font-weight:700; font-size:0.85rem;">
+                    View Cart →
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080"></div>
+
+    <script>
+        // Redirect to order page when success modal is closed
+        document.getElementById('successModal').addEventListener('hidden.bs.modal', function () {
+            window.location.href = '/order';
+        });
+    </script>
+</body>
+
+</html>
