@@ -61,8 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('input[name="payType"]').forEach(radio => {
         radio.addEventListener('change', () => {
-            tileOnline?.classList.toggle('active', document.getElementById('payOnline').checked);
-            tileCod?.classList.toggle('active', document.getElementById('payCod').checked);
+            document.getElementById('tile-upi')?.classList.toggle('active', document.getElementById('payUPI').checked);
+            document.getElementById('tile-online')?.classList.toggle('active', document.getElementById('payOnline').checked);
             refreshTotals();
         });
     });

@@ -1315,12 +1315,18 @@
                         <!-- Payment -->
                         <div class="f-group">
                             <label class="f-label">Payment Method</label>
-                            <div class="pay-grid">
-                                <label class="pay-tile active" id="tile-online" style="width: 100%;">
-                                    <input type="radio" name="payType" id="payOnline" value="upi" checked>
+                            <div class="pay-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <label class="pay-tile active" id="tile-upi" style="width: 100%;">
+                                    <input type="radio" name="payType" id="payUPI" value="upi" checked>
                                     <span class="pay-tile-icon">📱</span>
                                     <div class="pay-tile-name">UPI / GPay</div>
-                                    <div class="pay-tile-sub">Pay to Clinic UPI ID directly</div>
+                                    <div class="pay-tile-sub">Manual Payment</div>
+                                </label>
+                                <label class="pay-tile" id="tile-online" style="width: 100%;">
+                                    <input type="radio" name="payType" id="payOnline" value="online">
+                                    <span class="pay-tile-icon">💳</span>
+                                    <div class="pay-tile-name">Debit/Credit</div>
+                                    <div class="pay-tile-sub">Razorpay Secure</div>
                                 </label>
                             </div>
                         </div>
