@@ -122,13 +122,28 @@ async function sendTelegram(customer, items, paymentId, total) {
 async function sendEmail(templateId, params, label) {
     const SERVICE = process.env.EMAILJS_SERVICE_ID;
     const KEY = process.env.EMAILJS_PUBLIC_KEY;
-    if (!SERVICE || !templateId || !KEY) return;
+    const SECRET = process.env.EMAILJS_PRIVATE_KEY;
+    if (!SERVICE || !templateId || !KEY) {
+        log.error('emailjs_config_missing', { label });
+        return;
+    }
 
-    await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ service_id: SERVICE, template_id: templateId, user_id: KEY, template_params: params })
+        body: JSON.stringify({ 
+            service_id: SERVICE, 
+            template_id: templateId, 
+            user_id: KEY, 
+            accessToken: SECRET,
+            template_params: params 
+        })
     });
+    
+    if (!res.ok) {
+        const errText = await res.text();
+        log.error('emailjs_send_failed', { label, err: errText });
+    }
 }
 
 export default async function handler(req, res) {

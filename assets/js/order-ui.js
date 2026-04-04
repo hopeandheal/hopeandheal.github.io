@@ -93,31 +93,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const btn = document.getElementById('btn-send-otp');
         btn.disabled = true;
-        btn.textContent = 'Sending…';
+        btn.textContent = 'Verifying…';
 
-        // In production: call your OTP API here.
-        await new Promise(r => setTimeout(r, 700)); // simulate network
-        alert('Verification Code: 1234\n\n(Use 1234 to verify and continue with your order.)');
-        document.getElementById('otp-section').style.display = 'block';
+        // Simulate seamless verification
+        await new Promise(r => setTimeout(r, 700));
 
-        btn.textContent = 'Resend OTP';
-        btn.disabled = false;
-    });
+        btn.textContent = 'Verified ✓';
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-secondary');
+        document.getElementById('is-phone-verified').value = 'true';
+        document.getElementById('phone').readOnly = true;
 
-    document.getElementById('btn-verify-otp')?.addEventListener('click', () => {
-        const otp = document.getElementById('otp-input').value.trim();
-        // DEV: accept any 4-digit OTP. Replace with real API verification in prod.
-        if (otp.length === 4 && /^\d+$/.test(otp)) {
-            document.getElementById('is-phone-verified').value = 'true';
-            document.getElementById('otp-section').style.display = 'none';
-            document.getElementById('btn-send-otp').style.display = 'none';
-            document.getElementById('phone').readOnly = true;
-            document.getElementById('otp-success-msg').innerHTML =
-                '<span class="verified-badge">✅ Phone Verified</span>';
-        } else {
-            document.getElementById('otp-success-msg').innerHTML =
-                '<span class="text-danger small">Invalid OTP. Enter a 4-digit code.</span>';
-        }
+        const otpGroup = document.getElementById('otp-section');
+        if (otpGroup) otpGroup.style.display = 'none';
+
+        const successMsg = document.getElementById('otp-success-msg');
+        if (successMsg) successMsg.innerHTML = '<span class="verified-badge">✅ Phone Verified</span>';
     });
 
     // ── Form submission ────────────────────────────────────────────────────────
@@ -162,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const deliveryFee = getDeliveryFee();
         const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-        const serviceFee = payType === 'online' ? Math.round((subtotal + deliveryFee) * 0.02 * 100) / 100 : 0;
+        const serviceFee = 0; // Removed the 2% dummy fee
         const total = subtotal + deliveryFee + serviceFee;
         const paymentId = 'HH-' + Date.now().toString(36).toUpperCase();
         const addressStr = isPickup ? 'Clinic Pickup (Rajkot)' : `${street}, ${city}, ${state} - ${pin}`;

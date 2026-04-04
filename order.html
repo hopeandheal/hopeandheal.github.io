@@ -5,10 +5,44 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    <link rel="apple-touch-icon" href="assets/images/favicon.png">
     <meta name="robots" content="index, follow">
-    <title>Order Online – Hope & Heal | Homoeopathic Products</title>
+    <title>Order Online – Hope & Heal | Best Homoeopathic Products in Rajkot</title>
     <meta name="description"
-        content="Order premium homoeopathic remedies and natural care products from Hope & Heal. Fast delivery across India.">
+        content="Order premium homoeopathic remedies and natural care products from Hope & Heal clinic in Rajkot. Quick delivery, pure formulas by Dr. Nirav Khunt.">
+    <meta name="keywords" content="Buy homeopathic medicine, Order natural care products, Homeopathy products Rajkot, Hope and Heal shop">
+    
+    <!-- Schema.org for Google Local SEO on Order Page -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebPage",
+          "@id": "https://hopeandheal.co.in/order",
+          "url": "https://hopeandheal.co.in/order",
+          "name": "Order Online | Hope & Heal Homoeopathy",
+          "description": "Premium homoeopathic remedies and healthcare products from Dr. Nirav Khunt."
+        },
+        {
+          "@type": "MedicalClinic",
+          "@id": "https://hopeandheal.co.in/#clinic",
+          "name": "Hope & Heal Homoeopathy Clinic",
+          "url": "https://hopeandheal.co.in/",
+          "telephone": "+91 84690 22764",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Rajkot",
+            "addressLocality": "Rajkot",
+            "addressRegion": "Gujarat",
+            "postalCode": "360001",
+            "addressCountry": "IN"
+          }
+        }
+      ]
+    }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -122,19 +156,16 @@
             justify-content: center;
             padding-top: 1rem;
             margin-top: 0.8rem;
-            border-top: 1px dashed rgba(80, 110, 0, 0.2);
+            border-top: 1px dashed rgba(255, 255, 255, 0.25);
             width: 100%;
             overflow-x: auto;
             white-space: nowrap;
             -ms-overflow-style: none;
-            /* IE and Edge */
             scrollbar-width: none;
-            /* Firefox */
         }
 
         .shop-trust-row::-webkit-scrollbar {
             display: none;
-            /* Chrome, Safari and Opera */
         }
 
         .shop-trust-item {
@@ -142,7 +173,7 @@
             align-items: center;
             gap: 0.5rem;
             font-size: 0.82rem;
-            color: var(--ink-mid);
+            color: rgba(255, 255, 255, 0.95);
             font-weight: 600;
             letter-spacing: 0.06em;
             text-transform: uppercase;
@@ -151,7 +182,7 @@
         .shop-trust-icon {
             font-size: 1.15rem;
             line-height: 1;
-            color: var(--green);
+            color: #c1d683;
         }
 
         /* The Banner Accent - below the header */
@@ -1238,17 +1269,11 @@
                         <div class="f-group">
                             <label class="f-label">Payment Method</label>
                             <div class="pay-grid">
-                                <label class="pay-tile active" id="tile-online">
-                                    <input type="radio" name="payType" id="payOnline" value="online" checked>
+                                <label class="pay-tile active" id="tile-online" style="width: 100%;">
+                                    <input type="radio" name="payType" id="payOnline" value="upi" checked>
                                     <span class="pay-tile-icon">📱</span>
-                                    <div class="pay-tile-name">UPI / Card</div>
-                                    <div class="pay-tile-sub">+2% processing fee</div>
-                                </label>
-                                <label class="pay-tile" id="tile-cod">
-                                    <input type="radio" name="payType" id="payCod" value="cod">
-                                    <span class="pay-tile-icon">💵</span>
-                                    <div class="pay-tile-name">Cash on Delivery</div>
-                                    <div class="pay-tile-sub">No extra charge</div>
+                                    <div class="pay-tile-name">UPI / GPay</div>
+                                    <div class="pay-tile-sub">Pay to Clinic UPI ID directly</div>
                                 </label>
                             </div>
                         </div>

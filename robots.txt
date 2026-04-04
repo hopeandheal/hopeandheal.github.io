@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /admin.html
 Disallow: /api/
 
-Sitemap: https://www.hopeandheal.co.in/sitemap.xml
+Sitemap: https://hopeandheal.co.in/sitemap.xml
