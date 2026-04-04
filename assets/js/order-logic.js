@@ -41,7 +41,7 @@ async function loadTreatments() {
     if (!container) return;
 
     try {
-        const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+        const API_BASE = window.location.hostname === 'localhost' ? `${window.location.protocol}//${window.location.host}` : '';
         const res = await fetch(`${API_BASE}/api/products`);
         const data = await res.json();
 

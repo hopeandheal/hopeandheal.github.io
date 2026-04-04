@@ -766,3 +766,16 @@ footer {
     padding-bottom: 80px; /* Space for the floating mobile bar */
   }
 }
+/* ══════════════════════════════
+   ORDER PAGE FIXES
+══════════════════════════════ */
+/* Removed static override to consistently use floating pill navbar */
+
+
+.order-page section.menu {
+  position: fixed !important;
+  top: 0;
+  width: 100%;
+  z-index: 1030 !important;
+  padding: 0 !important;
+}

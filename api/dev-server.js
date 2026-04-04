@@ -32,13 +32,29 @@ const PORT = 3002;
 const HAS_GOOGLE = !!(process.env.GOOGLE_SERVICE_ACCOUNT_JSON && process.env.GOOGLE_SHEET_ID);
 const HAS_CAL = !!(process.env.GOOGLE_SERVICE_ACCOUNT_JSON && process.env.GOOGLE_CALENDAR_ID);
 
+// ─── Local Mock Storage (Persistence for current process) ───
+const localOrders = [];
+const localLogs = [];
+
 const MOCK_HANDLERS = {
     '/api/notify': async (body, _q, method) => {
         if (method !== 'POST') return { status: 405, body: { error: 'Method not allowed' } };
         console.log('\n🏥 [DEV] /api/notify called');
-        console.log('   Patient:', body.customer?.name);
-        console.log('   Items:', body.items?.map(i => `${i.day}: ${i.name}`).join(', '));
-        console.log('   Total: ₹' + (body.total || 0).toFixed(2));
+        
+        const newOrder = {
+            'Timestamp': new Date().toISOString(),
+            'ID': body.paymentId || 'MOCK_' + Date.now(),
+            'Name': body.customer?.name || 'Unknown',
+            'Phone': body.customer?.phone || '',
+            'Email': body.customer?.email || '',
+            'Type': body.customer?.type === 'delivery' ? 'Home Visit' : 'Clinic',
+            'Address': body.customer?.address || (body.customer?.type === 'pickup' ? 'Rajkot Clinic' : ''),
+            'Total': (body.total || 0).toFixed(2),
+            ...Object.fromEntries((body.items || []).map(i => [i.day || 'Products', i.name + ' (x' + (i.qty || 1) + ')']))
+        };
+
+        localOrders.unshift(newOrder); // Add to local memory
+        localLogs.unshift({ 'Timestamp': new Date().toISOString(), 'Level': 'INFO', 'Event': 'order_received', 'Details': `Customer: ${body.customer?.name}` });
 
         if (HAS_GOOGLE) {
             try {
@@ -46,14 +62,7 @@ const MOCK_HANDLERS = {
                 await writeLog('INFO', 'order_received', { paymentId: body.paymentId, customer: body.customer?.name });
                 console.log('   ✅ REAL Google Sheets written');
             } catch (e) { console.error('   ❌ Sheets error:', e.message); }
-        } else { console.log('   ✅ Mock Sheets entry successful (simulated)'); }
-
-        if (HAS_CAL) {
-            try {
-                await createOrderCalendarEvents(body.customer, body.items, body.paymentId, body.deliveryCost || 0);
-                console.log('   ✅ REAL Google Calendar event created');
-            } catch (e) { console.error('   ❌ Calendar error:', e.message); }
-        } else { console.log('   ✅ Mock Calendar entry successful (simulated)'); }
+        } else { console.log('   ✅ Mock Sheets entry successful (Saved in-memory)'); }
 
         return { status: 200, body: { success: true, _mock: true } };
     },
@@ -61,10 +70,8 @@ const MOCK_HANDLERS = {
     '/api/admin-auth': (body) => {
         console.log('\n🔐 [DEV] /api/admin-auth called');
         if (body?.password === 'dev-admin') {
-            console.log('   ✅ Auth success');
             return { status: 200, body: { token: 'mock-token-123', expiresAt: Date.now() / 1000 + 86400 } };
         }
-        console.log('   ❌ Wrong password');
         return { status: 401, body: { error: 'Invalid password' } };
     },
 
@@ -72,21 +79,42 @@ const MOCK_HANDLERS = {
         const auth = headers?.authorization || '';
         if (!auth.startsWith('Bearer mock-token-123')) return { status: 401, body: { error: 'Unauthorized' } };
         const type = query.get('type') || 'orders';
-        console.log(`\n📊 [DEV] /api/admin-data?type=${type} called`);
 
         if (type === 'orders') {
-            if (HAS_GOOGLE) return { status: 200, body: { orders: await readOrders(50) } };
-            return { status: 200, body: { orders: [{ 'Timestamp': new Date().toISOString(), 'Name': 'Mock Patient', 'Total': '500.00' }] } };
+            let external = [];
+            if (HAS_GOOGLE) external = await readOrders(50);
+            return { status: 200, body: { orders: [...localOrders, ...external] } };
         }
         if (type === 'logs') {
-            if (HAS_GOOGLE) return { status: 200, body: { logs: await readLogs(20) } };
-            return { status: 200, body: { logs: [{ 'Timestamp': new Date().toISOString(), 'Level': 'INFO', 'Event': 'mock_event' }] } };
+            let external = [];
+            if (HAS_GOOGLE) external = await readLogs(20);
+            return { status: 200, body: { logs: [...localLogs, ...external] } };
         }
         if (type === 'products') {
             if (HAS_GOOGLE) return { status: 200, body: { products: await readProducts() } };
             return { status: 200, body: { products: [] } };
         }
         return { status: 400, body: { error: 'Invalid type' } };
+    },
+
+    '/api/admin-appointment': async (body, _q, method, headers) => {
+        const auth = headers?.authorization || '';
+        if (!auth.startsWith('Bearer mock-token-123')) return { status: 401, body: { error: 'Unauthorized' } };
+        console.log('\n👩‍⚕️ [DEV] /api/admin-appointment (Manual Order) called');
+
+        const newOrder = {
+            'Timestamp': new Date().toISOString(),
+            'ID': 'MANUAL_' + Date.now(),
+            'Name': body.customerName,
+            'Phone': body.customerPhone,
+            'Type': body.requestType,
+            'Total': (body.totals?.total || 0).toFixed(2),
+            ...body.days
+        };
+        localOrders.unshift(newOrder);
+        localLogs.unshift({ 'Timestamp': new Date().toISOString(), 'Level': 'INFO', 'Event': 'manual_order_added', 'Details': body.customerName });
+
+        return { status: 200, body: { success: true } };
     },
 
     '/api/products': async (_body, _q, method) => {

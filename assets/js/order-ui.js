@@ -72,7 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
         checkoutBtn.style.display = 'none';
         checkoutSection.style.display = 'block';
         // Small delay so display kicks in before scroll
-        setTimeout(() => checkoutSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+        setTimeout(() => {
+            const nav = document.querySelector('.navbar');
+            const isFixed = nav && (getComputedStyle(nav).position === 'fixed' || getComputedStyle(nav).position === 'sticky');
+            const offset = isFixed ? nav.offsetHeight + 20 : 20;
+            const targetPos = checkoutSection.getBoundingClientRect().top + window.pageYOffset - offset;
+            window.scrollTo({ top: targetPos, behavior: 'smooth' });
+        }, 100);
         refreshTotals(); // update totals now that section is visible
     });
 
@@ -91,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // In production: call your OTP API here.
         await new Promise(r => setTimeout(r, 700)); // simulate network
-        alert('TEST OTP: 1234\n\n(Note: This is a demo. In a real application, this would be sent via SMS.)');
+        alert('Verification Code: 1234\n\n(Use 1234 to verify and continue with your order.)');
         document.getElementById('otp-section').style.display = 'block';
 
         btn.textContent = 'Resend OTP';
@@ -196,6 +202,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (res.ok) {
                 document.getElementById('ref-id').innerText = paymentId;
+                
+                // Pre-fill WhatsApp Receipt
+                const waPhone = '918469022764';
+                const itemsList = cart.map(i => `• ${i.name} (x${i.quantity || 1})`).join('\n');
+                const waMsg = encodeURIComponent(`Hello Hope & Heal Team,\n\nI have just placed an order!\n\nReference: ${paymentId}\nItems:\n${itemsList}\nTotal: ₹${total.toFixed(2)}\n\nThank you!`);
+                const waBtn = document.getElementById('btn-wa-receipt');
+                if(waBtn) waBtn.href = `https://wa.me/${waPhone}?text=${waMsg}`;
+
                 try {
                     localStorage.removeItem('hh_cart');
                     if (window.cart) window.cart.length = 0;
@@ -285,8 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.scrollToCart = function () {
         const cartEl = document.querySelector('.cart-card');
         if (!cartEl) return;
-        const navHeight = document.querySelector('.navbar')?.offsetHeight || 80;
-        const targetPos = cartEl.getBoundingClientRect().top + window.pageYOffset - navHeight - 20;
+        const navHeight = document.activeElement ? 120 : 100; // Offset for fixed header + breathing room
+        const targetPos = cartEl.getBoundingClientRect().top + window.pageYOffset - navHeight;
         window.scrollTo({ top: targetPos, behavior: 'smooth' });
     };
 });

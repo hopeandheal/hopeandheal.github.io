@@ -10,23 +10,32 @@
     <link href="https://fonts.googleapis.com/css2?family=Brygada+1918:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
+        /* Cloak both to prevent flash */
+        #login-screen, #dashboard { display: none; }
+    </style>
+    <script>
+        // Critical blocking script to prevent theme/auth flash
+        (function() {
+            const token = sessionStorage.getItem('hh_admin_token');
+            const root = document.documentElement;
+            if (token) root.classList.add('auth-valid');
+        })();
+    </script>
+    <style>
         :root {
-            --primary: #a5be00;
-            --secondary: #427aa1;
-            --font-serif: 'Brygada 1918', serif;
-            --font-sans: 'Brygada 1918', system-ui, -apple-system, sans-serif;
-            --bg: #f0f4eb;
-            --surface: #ffffff;
-            --surface2: #e9efe1;
-            --border: #d8e1cf;
+            color-scheme: dark;
+            --bg: #0d1108;
+            --surface: #151a10;
+            --surface2: #1d2315;
+            --border: #2a3320;
             --accent: #a5be00;
-            --accent-dim: #849800;
-            --text: #232323;
-            --text-muted: #757b62;
-            --success: #20ac6b;
+            --accent-dim: #7a8c00;
+            --text: #e2e8d8;
+            --text-muted: #838e70;
+            --success: #2ec4b6;
             --error: #ef4444;
-            --warn: #cc9900;
-            --info: #0aa3c2;
+            --warn: #ff9f1c;
+            --info: #00d2ff;
         }
 
         * {
@@ -36,29 +45,37 @@
         }
 
         body {
-            font-family: var(--font-sans);
+            font-family: 'Nunito', system-ui, -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
         }
 
         /* ─── Login Screen ─── */
-        .login-screen {
+        #login-screen {
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: radial-gradient(circle at center, #ffffff 0%, #f0f4eb 100%);
+            background: radial-gradient(ellipse at top, #1a2215 0%, #0d1108 75%);
         }
+
+        /* Cloaking logic */
+        html.auth-valid #login-screen { display: none !important; }
+        html.auth-valid #dashboard { display: block !important; }
+        
+        /* If no token, show login */
+        html:not(.auth-valid) #login-screen { display: flex !important; }
+        html:not(.auth-valid) #dashboard { display: none !important; }
 
         .login-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 48px;
-            width: 400px;
+            width: 380px;
             max-width: 90%;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
         }
 
         .login-logo {
@@ -72,8 +89,7 @@
             font-size: 1.5rem;
             font-weight: 700;
             margin-bottom: 4px;
-            font-family: var(--font-serif);
-            color: var(--primary);
+            color: var(--accent);
         }
 
         .login-sub {
@@ -114,7 +130,7 @@
             width: 100%;
             padding: 13px;
             background: var(--accent);
-            color: #fff;
+            color: #000;
             border: none;
             border-radius: 8px;
             font-weight: 700;
@@ -170,22 +186,8 @@
         }
 
         @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1
-            }
-
-            0%,
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-
-            50% {
-                opacity: 0.4;
-                transform: scale(1.2);
-            }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.2); }
         }
 
         .btn-logout {
@@ -208,15 +210,15 @@
             gap: 4px;
             padding: 16px 24px 0;
             border-bottom: 1px solid var(--border);
-            background: #fff;
+            background: var(--surface);
         }
 
         .nav-tab {
-            padding: 12px 24px;
-            border-radius: 12px 12px 0 0;
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
             cursor: pointer;
             font-size: 0.9rem;
-            font-weight: 600;
+            font-weight: 500;
             color: var(--text-muted);
             border: 1px solid transparent;
             border-bottom: none;
@@ -227,21 +229,21 @@
         }
 
         .nav-tab:hover {
-            color: var(--primary);
-            background: var(--bg);
+            color: var(--text);
+            background: var(--surface2);
         }
 
         .nav-tab.active {
-            color: var(--primary);
-            background: var(--bg);
+            color: var(--accent);
+            background: var(--surface2);
             border-color: var(--border);
-            border-bottom: 2px solid var(--primary);
         }
 
         .content {
-            padding: 32px 24px;
+            padding: 24px;
             max-width: 1400px;
             margin: 0 auto;
+            min-height: calc(100vh - 160px);
         }
 
         .stat-grid {
@@ -259,7 +261,7 @@
         }
 
         .stat-label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -267,46 +269,33 @@
         }
 
         .stat-value {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 700;
-            font-family: var(--font-serif);
         }
 
-        .stat-value.green {
-            color: var(--primary);
-        }
-
-        .stat-value.amber {
-            color: var(--secondary);
-        }
-
-        .stat-value.red {
-            color: var(--error);
-        }
+        .stat-value.green { color: var(--accent); }
+        .stat-value.amber { color: var(--info); }
+        .stat-value.red { color: var(--error); }
 
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 20px;
+            border-radius: 12px;
             overflow: hidden;
             margin-bottom: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
         }
 
         .card-header {
-            padding: 20px 24px;
+            padding: 16px 20px;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #fff;
         }
 
         .card-title {
-            font-weight: 700;
-            font-size: 1.1rem;
-            font-family: var(--font-serif);
-            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.95rem;
         }
 
         .btn-refresh {
@@ -319,7 +308,7 @@
             cursor: pointer;
         }
 
-        .btn-refresh:hover {
+        .btn-refresh:hover:not(:disabled) {
             border-color: var(--accent);
             color: var(--accent);
         }
@@ -341,19 +330,19 @@
             text-align: left;
             color: var(--text-muted);
             font-weight: 500;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
             border-bottom: 1px solid var(--border);
         }
 
         td {
             padding: 12px 16px;
-            border-bottom: 1px solid rgba(46, 50, 96, 0.5);
+            border-bottom: 1px solid rgba(42, 51, 32, 0.5);
         }
 
-        tr:hover td {
-            background: rgba(19, 177, 157, 0.04);
-        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(165, 190, 0, 0.03); }
 
         .badge {
             display: inline-block;
@@ -363,64 +352,30 @@
             font-weight: 600;
         }
 
-        .badge-home {
-            background: rgba(96, 165, 250, 0.15);
-            color: var(--info);
-        }
+        .badge-home { background: rgba(0, 210, 255, 0.15); color: var(--info); }
+        .badge-clinic { background: rgba(165, 190, 0, 0.15); color: var(--accent); }
+        .badge-info { background: rgba(0, 210, 255, 0.15); color: var(--info); }
+        .badge-warn { background: rgba(255, 159, 28, 0.15); color: var(--warn); }
+        .badge-error { background: rgba(239, 68, 68, 0.15); color: var(--error); }
 
-        .badge-clinic {
-            background: rgba(34, 197, 94, 0.15);
-            color: var(--success);
-        }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
 
-        .badge-warn {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--warn);
-        }
+        .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+        .loading i { font-size: 1.5rem; animation: spin 1s linear infinite; display: inline-block; }
 
-        .badge-error {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--error);
-        }
-
-        .tab-pane {
-            display: none;
-        }
-
-        .tab-pane.active {
-            display: block;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-muted);
-        }
-
-        .loading i {
-            font-size: 1.5rem;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* ─── Modal ─── */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
             z-index: 1000;
             display: none;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(4px);
         }
 
         .modal {
@@ -443,11 +398,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            color: var(--accent);
         }
 
         .btn-close {
-            background: none;
-            border: none;
+            background: none; border: none;
             color: var(--text-muted);
             font-size: 1.5rem;
             cursor: pointer;
@@ -457,7 +412,7 @@
             width: 100%;
             padding: 12px;
             background: var(--accent);
-            color: #fff;
+            color: #000;
             border: none;
             border-radius: 8px;
             font-weight: 700;
@@ -465,40 +420,29 @@
             margin-top: 10px;
         }
 
-        .btn-submit:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
         @media (max-width: 768px) {
-            .stat-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .nav-tab {
-                padding: 10px;
-                font-size: 0.8rem;
-                flex: 1;
-                text-align: center;
-            }
+            .stat-grid { grid-template-columns: repeat(2, 1fr); }
+            .nav-tab { padding: 10px; font-size: 0.8rem; flex: 1; text-align: center; }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- ─── Login ───────────────────────────────────────────────────────────────    <!-- Login Screen -->
+    <!-- ─── Login Screen ─── -->
     <div id="login-screen">
         <div class="login-card">
             <div class="login-logo">🏥</div>
-            <div class="login-title">Clinic Access</div>
-            <div class="login-sub">Secure Hospital Management Portal</div>
+            <div class="login-title">Hope & Heal Admin</div>
+            <div class="login-sub">Restricted Clinical Portal</div>
             <div class="form-group">
-                <label>System Password</label>
-                <input type="password" id="login-password" placeholder="••••••••" autofocus>
+                <label>Admin Password</label>
+                <input type="password" id="login-password" placeholder="Enter password" autofocus>
             </div>
-            <button class="btn-login" id="login-btn">Secure Login</button>
-            <div class="login-error" id="login-error">Invalid clinic credentials.</div>
+            <button class="btn-login" id="login-btn">Sign In</button>
+            <div class="login-error" id="login-error">Invalid password. Access denied.</div>
         </div>
     </div>
 
@@ -508,7 +452,7 @@
             <div class="topbar-brand">
                 <img src="assets/images/photo-1441205188609-b875e92a9807.jpg" alt="Logo"
                     style="height:40px; border-radius:50%; border:1px solid var(--border);">
-                <span>Hope & Heal <small style="font-weight:400; opacity:0.6;">| Admin</small></span>
+                <span>Hope & Heal <small style="font-weight:400; opacity:0.6;">| Management</small></span>
                 <div class="dot"></div>
             </div>
             <div class="d-flex align-items-center gap-3">
@@ -519,7 +463,7 @@
 
         <nav class="nav-tabs-custom">
             <div class="nav-tab active" data-tab="overview"><i class="bi bi-grid-1x2"></i> Overview</div>
-            <div class="nav-tab" data-tab="orders"><i class="bi bi-calendar-check"></i> Appointments</div>
+            <div class="nav-tab" data-tab="appointments"><i class="bi bi-calendar-check"></i> Customer Orders</div>
             <div class="nav-tab" data-tab="products"><i class="bi bi-tag"></i> Products</div>
             <div class="nav-tab" data-tab="logs"><i class="bi bi-activity"></i> System Logs</div>
         </nav>
@@ -528,28 +472,34 @@
 
             <!-- Overview Tab -->
             <div class="tab-pane active" id="tab-overview">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 1.2rem; font-weight: 700;">Dashboard Overview</h2>
+                    <button class="btn-refresh" onclick="openOrderModal()" style="color:var(--accent); border-color:var(--accent); background: rgba(165, 190, 0, 0.1);">
+                        <i class="bi bi-plus-circle"></i> Add Manual Order
+                    </button>
+                </div>
                 <div class="stat-grid" id="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-label">Total Cases</div>
+                        <div class="stat-label">Total Orders</div>
                         <div class="stat-value amber" id="stat-total">—</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Consultations (Week)</div>
+                        <div class="stat-label">Revenue (Week)</div>
                         <div class="stat-value green" id="stat-revenue">—</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Clinic Visits</div>
+                        <div class="stat-label">Pickups</div>
                         <div class="stat-value" id="stat-pickups">—</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Home Visits</div>
+                        <div class="stat-label">Deliveries</div>
                         <div class="stat-value" id="stat-deliveries">—</div>
                     </div>
                 </div>
 
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Recent Appointments</span>
+                        <span class="card-title">Recent Orders</span>
                         <button class="btn-refresh" onclick="loadAll()"><i class="bi bi-arrow-clockwise"></i>
                             Refresh</button>
                     </div>
@@ -558,9 +508,11 @@
                             <thead>
                                 <tr>
                                     <th>Time</th>
-                                    <th>Patient</th>
+                                    <th>Customer</th>
+                                    <th>Contact</th>
                                     <th>Type</th>
                                     <th>Detail</th>
+                                    <th>Total</th>
                                     <th>Ref</th>
                                 </tr>
                             </thead>
@@ -578,7 +530,7 @@
             <div class="tab-pane" id="tab-appointments">
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Complete Appointment History</span>
+                        <span class="card-title">All Customer Orders</span>
                         <button class="btn-refresh" onclick="loadOrders()"><i class="bi bi-arrow-clockwise"></i>
                             Refresh</button>
                     </div>
@@ -586,10 +538,11 @@
                         <table id="appointments-full-table">
                             <thead>
                                 <tr>
-                                    <th>Timestamp</th>
-                                    <th>Patient Name</th>
-                                    <th>Phone</th>
+                                    <th>Date/Time</th>
+                                    <th>Customer Name</th>
+                                    <th>Phone & Email</th>
                                     <th>Visit Type</th>
+                                    <th>Address / Detail</th>
                                     <th>Treatments</th>
                                     <th>Total (₹)</th>
                                     <th>Ref</th>
@@ -674,11 +627,11 @@
     <div class="modal-overlay" id="appointment-modal">
         <div class="modal">
             <div class="modal-header">
-                <span>Add Manual Appointment</span>
-                <button class="btn-close" onclick="closeAppointmentModal()">&times;</button>
+                <span>Add Manual Order</span>
+                <button class="btn-close" onclick="closeOrderModal()">&times;</button>
             </div>
             <div class="form-group">
-                <label>Patient Name</label>
+                <label>Customer Name</label>
                 <input type="text" id="m-name" placeholder="Full name">
             </div>
             <div class="form-group">
@@ -686,15 +639,15 @@
                 <input type="text" id="m-phone" placeholder="+91 84690 22764">
             </div>
             <div class="form-group">
-                <label>Visit Type</label>
+                <label>Order Type</label>
                 <select id="m-type"
                     style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:8px;">
-                    <option value="pickup">Clinic Visit</option>
-                    <option value="delivery">Home Visit</option>
+                    <option value="pickup">Pickup (Clinic)</option>
+                    <option value="delivery">Delivery (Home)</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Session Fee (₹)</label>
+                <label>Order Total (₹)</label>
                 <input type="number" id="m-fee" placeholder="0.00">
             </div>
             <p class="small text-muted mb-2">Treatments:</p>
@@ -724,7 +677,7 @@
                         style="width:100%; padding:5px; background:var(--bg); border:1px solid var(--border);">
                 </div>
             </div>
-            <button class="btn-submit" id="submit-appointment">Confirm & Sync to Calendar</button>
+            <button class="btn-submit" id="submit-appointment">Save Order to Cloud</button>
         </div>
     </div>
 
@@ -789,15 +742,12 @@
         </div>
     </div>
 
-    <footer class="footer-modern mt-5">
-        <div class="container text-center">
-            <div class="mb-4">
-                <img src="assets/images/photo-1441205188609-b875e92a9807.jpg" alt=""
-                    style="height: 3rem; border-radius: 50%;" class="mb-2">
-                <h3 class="display-7" style="font-family: var(--font-serif); color: #fff;">Hope & Heal Admin</h3>
-            </div>
-            <p class="text-white-50 small mb-0">&copy; 2026 Hope & Heal Clinic. Internal Management Portal.</p>
+    <footer style="padding: 40px 24px; border-top: 1px solid var(--border); background: var(--surface); text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
+            <img src="assets/images/photo-1441205188609-b875e92a9807.jpg" alt="Logo" style="height: 32px; border-radius: 50%;">
+            <span style="font-weight: 700; color: var(--accent); font-size: 0.9rem;">Hope & Heal Admin</span>
         </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); opacity: 0.8;">&copy; 2026 Hope & Heal Clinic. Internal Clinical Management Portal. All rights reserved.</p>
     </footer>
 
     <!-- Scripts -->

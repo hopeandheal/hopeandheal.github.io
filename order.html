@@ -64,52 +64,54 @@
 
         /* ── Shop Header — Hero Banner Look ── */
         .shop-header {
-            background: linear-gradient(160deg, #f8faf2 0%, #edf2e4 100%);
-            border-bottom: 1.5px solid var(--border-soft);
+            background: linear-gradient(135deg, #1c2512 0%, #2a3318 100%);
+            color: #fff;
             text-align: center;
-            padding-top: 8.5rem; /* Space for the floating navbar + extra gap */
-            padding-bottom: 2rem;
+            padding: 8.5rem 0 4.5rem; /* Large top padding to clear fixed navbar */
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .shop-header::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 70% 30%, rgba(138, 175, 0, 0.05) 0%, transparent 70%);
+            background: radial-gradient(circle at 70% 30%, rgba(165, 190, 0, 0.15) 0%, transparent 60%);
             pointer-events: none;
         }
 
         .shop-header-inner {
-            padding: 0 1rem 0.6rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            padding: 0 1.5rem;
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
+            z-index: 2;
         }
 
         .shop-h1 {
             font-family: 'Cormorant Garamond', 'Playfair Display', serif;
-            font-size: clamp(2.2rem, 3.8vw, 3.2rem);
-            font-weight: 600;
-            color: var(--ink);
+            font-size: clamp(2.4rem, 5vw, 4rem);
+            font-weight: 700;
+            color: #fff;
             line-height: 1.1;
-            margin: 0 0 0.5rem;
+            margin: 0 0 1rem;
             letter-spacing: -0.02em;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
 
         .shop-tagline {
-            font-size: 0.95rem;
-            color: var(--ink-muted);
-            margin: 0 auto;
-            line-height: 1.6;
-            max-width: 600px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.15rem;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 800px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.5;
         }
 
         .shop-tagline strong {
-            color: var(--ink-mid);
             font-weight: 600;
         }
 
@@ -805,12 +807,13 @@
 
         .otp-input {
             flex: 1;
+            min-width: 0;
             border: 1.5px solid var(--border);
             border-radius: var(--r-input);
-            padding: 0.65rem 0.6rem;
+            padding: 0.65rem 0.5rem;
             font-size: 1.1rem;
             font-weight: 700;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.15em;
             text-align: center;
             background: var(--white);
             outline: none;
@@ -829,12 +832,13 @@
             background: #2a7a30;
             color: #fff;
             border-radius: var(--r-input);
-            padding: 0.65rem 1rem;
+            padding: 0.65rem 0.8rem;
             font-size: 0.88rem;
             font-weight: 700;
             cursor: pointer;
             transition: background 0.2s;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .btn-verify:hover {
@@ -998,10 +1002,10 @@
     </style>
 </head>
 
-<body>
+<body class="order-page">
 
     <section data-bs-version="5.1" class="menu menu2 cid-uqUIPDaTUN" once="menu" id="menu-5-uqUIPDaTUN">
-        <nav class="navbar navbar-dropdown navbar-fixed-top navbar-expand-lg">
+        <nav class="navbar navbar-dropdown navbar-expand-lg">
             <div class="container">
                 <div class="navbar-brand">
                     <span class="navbar-logo">
@@ -1138,30 +1142,33 @@
 
                         <!-- Phone -->
                         <div class="f-group">
-                            <label class="f-label">Phone Number</label>
-                            <div class="phone-row">
-                                <select class="phone-cc" id="phone-code" aria-label="Country code">
-                                    <option value="+91" selected>🇮🇳 +91</option>
-                                    <option value="+44">🇬🇧 +44</option>
-                                    <option value="+1">🇺🇸 +1</option>
-                                </select>
-                                <input class="phone-num" type="tel" id="phone" placeholder="98765 43210"
-                                    autocomplete="tel" required>
+                            <label class="f-label">Phone & Verification</label>
+                            <div class="d-flex gap-2">
+                                <div class="phone-row flex-grow-1">
+                                    <select class="phone-cc" id="phone-code" aria-label="Country code">
+                                        <option value="+91" selected>🇮🇳 +91</option>
+                                        <option value="+44">🇬🇧 +44</option>
+                                        <option value="+1">🇺🇸 +1</option>
+                                    </select>
+                                    <input class="phone-num" type="tel" id="phone" placeholder="98765 43210" autocomplete="tel" required>
+                                </div>
+                                <button class="btn-otp-action" type="button" id="btn-send-otp" style="white-space:nowrap; border-radius:12px; border:1px solid #d1dbca; background:white; padding:0 15px; font-weight:600; font-size:0.85rem; color:#4a5c3e;">Send OTP</button>
                             </div>
-                            <button class="btn-otp-block" type="button" id="btn-send-otp">Send OTP to
-                                verify</button>
                             <div class="f-error" id="err-phone">Enter a valid phone number.</div>
 
                             <!-- OTP -->
-                            <div class="otp-box" id="otp-section" style="display:none;">
-                                <div class="otp-hint">🔐 OTP sent — enter it below to verify</div>
-                                <div class="otp-row">
-                                    <input class="otp-input" type="text" id="otp-input" placeholder="• • • •"
-                                        maxlength="4" inputmode="numeric">
-                                    <button class="btn-verify" type="button" id="btn-verify-otp">Verify ✓</button>
+                            <div class="otp-container mt-3" id="otp-section" style="display:none; background: #f8faf7; border: 1px solid #eef2eb; border-radius: 12px; padding: 15px;">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-shield-lock" style="color: #7c8e00;"></i>
+                                    <span style="font-size: 0.8rem; font-weight: 600; color: #4a5c3e;">Secure Verification</span>
                                 </div>
+                                <div class="d-flex gap-2">
+                                    <input class="f-input text-center fw-bold" type="text" id="otp-input" placeholder="0 0 0 0" maxlength="4" inputmode="numeric" style="letter-spacing: 5px; flex-grow: 1;">
+                                    <button class="btn-verify" type="button" id="btn-verify-otp" style="background: #1a2215; color: white; border: none; border-radius: 10px; padding: 0 20px; font-weight: 600;">Verify</button>
+                                </div>
+                                <div class="small text-muted mt-2" style="font-size: 0.7rem;">Enter the code from our SMS system.</div>
                             </div>
-                            <div id="otp-success-msg"></div>
+                            <div id="otp-success-msg" class="mt-2"></div>
                             <input type="hidden" id="is-phone-verified" value="false">
                         </div>
 
@@ -1261,15 +1268,35 @@
     <!-- ══════ SUCCESS MODAL ══════ -->
     <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4 shadow-lg text-center px-4 py-5">
-                <div style="font-size:3.5rem;margin-bottom:1rem;">🎉</div>
-                <h2 style="font-family:'Playfair Display',serif;font-weight:700;" class="mb-2">Order Placed!</h2>
-                <p class="text-muted mb-1">Thank you for choosing Hope &amp; Heal.</p>
-                <p class="mb-4">Reference: <strong style="color:var(--green);" id="ref-id"></strong></p>
-                <p class="text-muted small mb-4">We'll confirm via WhatsApp / call shortly.</p>
-                <a href="/order" class="btn btn-primary px-5 py-2 fw-bold" style="border-radius: 12px !important;">Order
-                    Again / View
-                    Products</a>
+            <div class="modal-content border-0 rounded-5 shadow-2xl overflow-hidden" style="background: #ffffff; color: #1a2215;">
+                <div style="background: linear-gradient(135deg, #a5be00 0%, #7c8e00 100%); padding: 60px 20px; text-align: center; color: white;">
+                    <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                        <i class="bi bi-check-lg" style="font-size: 3rem;"></i>
+                    </div>
+                    <h2 style="font-family: 'Playfair Display', serif; font-weight: 800; margin: 0; font-size: 2rem;">Order Received!</h2>
+                </div>
+                <div class="p-5 text-center">
+                    <p class="text-muted fw-500 mb-4 px-2">Your health journey continues with us. We've received your request and our team is already preparing everything.</p>
+                    
+                    <div style="background: #f8faf7; border: 1px dashed #d1dbca; border-radius: 12px; padding: 15px; margin-bottom: 30px;">
+                        <span class="text-uppercase small fw-bold opacity-50 d-block mb-1">Reference Number</span>
+                        <strong style="color: #7c8e00; font-size: 1.25rem; letter-spacing: 1px;" id="ref-id"></strong>
+                    </div>
+
+                    <div class="d-flex flex-column gap-2 mb-4">
+                        <a id="btn-wa-receipt" target="_blank" class="btn btn-lg py-3 fw-bold shadow-sm" 
+                                style="background: #25d366; color: white; border-radius: 15px; border: none; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <i class="bi bi-whatsapp" style="font-size: 1.4rem;"></i>
+                            Send Receipt to WhatsApp
+                        </a>
+                        
+                        <button type="button" class="btn btn-lg py-3 fw-bold shadow-sm" 
+                                style="background: #f3f4f6; color: #4b5563; border-radius: 15px; border: none; transition: all 0.3s;"
+                                onclick="window.location.reload()">
+                            Continue Shopping
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1296,12 +1323,8 @@
     <script src="assets/js/cart-logic.js?v=1.4"></script>
     <script src="assets/js/order-ui.js?v=1.4"></script>
 
-    <!-- Floating Mobile Cart Bar (visible only on mobile when items in cart) -->
-    <div id="mobile-cart-bar" onclick="scrollToCart()" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:1040;
-               background: linear-gradient(135deg, #6b8c00, #8aaf00); color:#fff;
-               padding: 12px 20px; cursor:pointer;
-               box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
-               border-radius: 16px 16px 0 0;">
+    <!-- Floating Mobile Cart Bar -->
+    <div id="mobile-cart-bar" onclick="scrollToCart()" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:1040; background: linear-gradient(135deg, #6b8c00, #8aaf00); color:#fff; padding: 12px 20px; cursor:pointer; box-shadow: 0 -4px 20px rgba(0,0,0,0.25); border-radius: 16px 16px 0 0;">
         <div style="display:flex; justify-content:space-between; align-items:center; max-width:500px; margin:0 auto;">
             <div style="display:flex; align-items:center; gap:10px;">
                 <span style="background:rgba(255,255,255,0.25); border-radius:50%; width:32px; height:32px;
@@ -1326,6 +1349,11 @@
             window.location.href = '/order';
         });
     </script>
+    
+    <!-- ══════ WHATSAPP FLOAT ══════ -->
+    <a href="https://wa.me/918469022764" target="_blank" class="wa-float" style="position:fixed; bottom:30px; right:30px; background:#25d366; color:white; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; box-shadow:0 10px 25px rgba(0,0,0,0.3); z-index:9999; text-decoration:none;">
+        <i class="bi bi-whatsapp"></i>
+    </a>
 </body>
 
 </html>

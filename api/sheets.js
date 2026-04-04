@@ -57,20 +57,21 @@ async function sign(text, privateKey) {
 export async function writeOrder(customer, items, paymentId, deliveryCost, total, isManual = false) {
     const SHEET_ID = process.env.GOOGLE_SHEET_ID;
     if (!SHEET_ID) return;
+    const ORDER_HEADERS = ['Timestamp', 'ID', 'Name', 'Phone', 'Email', 'Type', 'Address', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Products', 'Total', 'Source'];
 
     try {
         const token = await getAccessToken();
         const timestamp = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata' });
+        await ensureSheet(token, 'Orders', ORDER_HEADERS);
 
         // Build per-category portions
         const storage = { Monday: '', Tuesday: '', Wednesday: '', Thursday: '', Friday: '', Saturday: '', Products: '' };
         for (const item of items) {
-            // Map 'Product' category to 'Products' column
             const key = item.day === 'Product' ? 'Products' : item.day;
             if (storage[key] !== undefined) {
-                storage[key] = (storage[key] ? storage[key] + ', ' : '') + `${item.name} (x${item.quantity})`;
+                storage[key] = (storage[key] ? storage[key] + ', ' : '') + `${item.name} (x${item.qty})`;
             } else {
-                storage.Products = (storage.Products ? storage.Products + ', ' : '') + `${item.name} (x${item.quantity})`;
+                storage.Products = (storage.Products ? storage.Products + ', ' : '') + `${item.name} (x${item.qty})`;
             }
         }
 
@@ -92,7 +93,6 @@ export async function writeOrder(customer, items, paymentId, deliveryCost, total
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ values })
         });
-
     } catch (err) {
         console.error('Sheets write error:', err.message);
         throw err;
@@ -105,10 +105,13 @@ export async function writeOrder(customer, items, paymentId, deliveryCost, total
 export async function writeLog(level, event, details = {}) {
     const SHEET_ID = process.env.GOOGLE_SHEET_ID;
     if (!SHEET_ID) return;
+    const LOG_HEADERS = ['Timestamp', 'Level', 'Event', 'Details'];
 
     try {
         const token = await getAccessToken();
         const timestamp = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata' });
+        await ensureSheet(token, 'Logs', LOG_HEADERS);
+
         const values = [[timestamp, level, event, JSON.stringify(details)]];
 
         await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Logs!A:A:append?valueInputOption=USER_ENTERED`, {
@@ -127,7 +130,7 @@ export async function readOrders(limit = 100) {
 
     try {
         const token = await getAccessToken();
-        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Orders!A1:O${limit + 1}`, {
+        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Orders!A1:P${limit + 1}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -251,4 +254,3 @@ export async function updateProducts(products) {
         throw err;
     }
 }
-

@@ -9,7 +9,7 @@
  * 5. Audit log visualization
  */
 
-const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+const API_BASE = window.location.hostname === 'localhost' ? `${window.location.protocol}//${window.location.host}` : '';
 
 document.addEventListener('DOMContentLoaded', () => {
     initDashboard();
@@ -40,12 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Logout
     document.getElementById('logout-btn')?.addEventListener('click', () => {
-        localStorage.removeItem('hh_admin_token');
+        sessionStorage.removeItem('hh_admin_token');
         location.reload();
     });
 
     // Manual Appointment Submission
-    document.getElementById('submit-appointment')?.addEventListener('click', submitManualAppointment);
+    document.getElementById('submit-appointment')?.addEventListener('click', submitManualOrder);
 
     // Initial check
     checkSession();
@@ -70,42 +70,57 @@ async function handleLogin() {
 
         if (res.ok) {
             const { token } = await res.json();
-            localStorage.setItem('hh_admin_token', token);
+            sessionStorage.setItem('hh_admin_token', token);
             checkSession();
+        } else if (res.status === 429) {
+            err.innerText = 'Too many attempts. Locked for 15 minutes.';
+            err.style.display = 'block';
         } else {
+            err.innerText = 'Invalid password. Access denied.';
             err.style.display = 'block';
         }
     } catch (e) {
-        alert('Server connection failed. Is the API running?');
+        err.innerText = 'Connection failed. Please try again.';
+        err.style.display = 'block';
     } finally {
         btn.disabled = false;
-        btn.innerText = 'Secure Login';
+        btn.innerText = 'Sign In';
     }
 }
 
 function checkSession() {
-    const token = localStorage.getItem('hh_admin_token');
-    const login = document.getElementById('login-screen');
-    const dash = document.getElementById('dashboard');
+    const token = sessionStorage.getItem('hh_admin_token');
+    const root = document.documentElement;
 
     if (token) {
-        if (login) login.style.display = 'none';
-        if (dash) dash.style.display = 'block';
+        root.classList.add('auth-valid');
         loadAll();
+        // Auto-refresh every 2 mins
+        if (!window._refreshInterval) {
+            window._refreshInterval = setInterval(loadAll, 120000);
+        }
     } else {
-        if (login) login.style.display = 'flex';
-        if (dash) dash.style.display = 'none';
+        root.classList.remove('auth-valid');
+        if (window._refreshInterval) {
+            clearInterval(window._refreshInterval);
+            window._refreshInterval = null;
+        }
     }
 }
 
 async function loadAll() {
+    const syncText = document.getElementById('last-refreshed');
+    if (syncText) syncText.innerText = 'Syncing...';
+    
     Promise.all([loadOrders(), loadLogs(), loadProducts()]).then(() => {
-        document.getElementById('last-refreshed').innerText = 'Last updated: ' + new Date().toLocaleTimeString();
+        if (syncText) {
+            syncText.innerText = 'Updated ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        }
     });
 }
 
 async function loadOrders() {
-    const token = localStorage.getItem('hh_admin_token');
+    const token = sessionStorage.getItem('hh_admin_token');
     if (!token) return;
 
     try {
@@ -125,7 +140,7 @@ async function loadOrders() {
 }
 
 async function loadLogs() {
-    const token = localStorage.getItem('hh_admin_token');
+    const token = sessionStorage.getItem('hh_admin_token');
     if (!token) return;
 
     try {
@@ -162,7 +177,7 @@ async function handleImageUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    const token = localStorage.getItem('hh_admin_token');
+    const token = sessionStorage.getItem('hh_admin_token');
     const btn = document.getElementById('p-upload-btn');
     if (!btn) return;
 
@@ -197,7 +212,7 @@ async function handleImageUpload(e) {
 }
 
 async function loadProducts() {
-    const token = localStorage.getItem('hh_admin_token');
+    const token = sessionStorage.getItem('hh_admin_token');
     const tbody = document.getElementById('products-body');
     if (!token || !tbody) return;
 
@@ -271,7 +286,7 @@ function editProduct(id) {
 }
 
 async function saveProduct() {
-    const token = localStorage.getItem('hh_admin_token');
+    const token = sessionStorage.getItem('hh_admin_token');
     const btn = document.getElementById('submit-product');
 
     const id = document.getElementById('p-id').value || 'prod_' + Date.now();
@@ -319,7 +334,7 @@ async function saveProduct() {
 
 async function deleteProduct(id) {
     if (!confirm('Are you sure you want to remove this item from the catalog?')) return;
-    const token = localStorage.getItem('hh_admin_token');
+    const token = sessionStorage.getItem('hh_admin_token');
     const newProducts = currentProducts.filter(p => p.ID !== id);
 
     try {
@@ -346,47 +361,81 @@ function renderOrderTables(orders) {
     if (!fullBody || !recentBody) return;
 
     if (orders.length === 0) {
-        fullBody.innerHTML = '<tr><td colspan="7" class="text-center py-5">No records found.</td></tr>';
-        recentBody.innerHTML = '<tr><td colspan="5" class="text-center py-5">No recent visits.</td></tr>';
+        if (fullBody) fullBody.innerHTML = '<tr><td colspan="8" class="text-center py-5">No records found.</td></tr>';
+        if (recentBody) recentBody.innerHTML = '<tr><td colspan="7" class="text-center py-5">No recent orders.</td></tr>';
         return;
     }
 
     const rows = orders.map(o => {
-        const type = (o.Type || '').toLowerCase();
-        const badge = type.includes('delivery') || type.includes('home') ? 'badge-home' : 'badge-clinic';
-        const label = type.includes('delivery') || type.includes('home') ? 'Home Visit' : 'Clinic';
+        const typeStr = (o.Type || o.type || '').toLowerCase();
+        const isHome = typeStr.includes('delivery') || typeStr.includes('home');
+        const badge = isHome ? 'badge-home' : 'badge-clinic';
+        const label = isHome ? 'Home Visit' : 'Clinic';
+        
+        // Robust Timestamp Formatting
+        let displayTimeFull = o.Timestamp || o.timestamp || '—';
+        let displayTimeShort = '—';
+        try {
+            const d = new Date(displayTimeFull);
+            if (!isNaN(d.getTime())) {
+                displayTimeFull = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) + ' ' + 
+                                  d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                displayTimeShort = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            }
+        } catch(e) {}
 
-        // Treatments string
-        const treatments = Object.entries(o)
-            .filter(([k, v]) => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].includes(k) && v)
-            .map(([k, v]) => `${k}: ${v}`).join(', ');
+        // WhatsApp & Contact
+        const phone = o.Phone || o.phone || '';
+        const email = o.Email || o.email || '';
+        const cleanPhone = phone.replace(/\D/g, '');
+        const waIcon = cleanPhone ? `<a href="https://wa.me/${cleanPhone}" target="_blank" class="text-success me-1" style="text-decoration:none;"><i class="bi bi-whatsapp"></i></a>` : '';
+
+        // Treatment & Product details
+        const itemKeys = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Products'];
+        const itemParts = [];
+        itemKeys.forEach(k => {
+            if (o[k] && o[k] !== 'N/A') {
+                const label = k === 'Products' ? '📦 Items' : k.slice(0,3);
+                itemParts.push(`${label}: ${o[k]}`);
+            }
+        });
+        const detailStr = itemParts.join(' | ') || 'General Consultation';
+
+        const totalVal = o.Total || o.total || '0';
+        const orderId = (o.ID || o.id || '').slice(-6);
 
         return {
-            html: `
+            full: `
                 <tr>
-                    <td class="small text-muted">${o.Timestamp || ''}</td>
-                    <td class="fw-bold">${o.Name || 'Unknown'}</td>
-                    <td class="small">${o.Phone || ''}</td>
+                    <td class="small text-muted">${displayTimeFull}</td>
+                    <td class="fw-bold">${o.Name || o.name || 'Unknown'}</td>
+                    <td>
+                        <div class="small">${waIcon}${phone}</div>
+                        <div class="small opacity-50">${email}</div>
+                    </td>
                     <td><span class="badge ${badge}">${label}</span></td>
-                    <td class="small opacity-75">${treatments || 'General'}</td>
-                    <td class="fw-bold text-success">₹${o.Total || '0.00'}</td>
-                    <td class="small font-monospace opacity-50">${o.ID || ''}</td>
+                    <td class="small">${o.Address || o.address || '—'}</td>
+                    <td class="small opacity-75">${detailStr}</td>
+                    <td class="fw-bold text-success">₹${totalVal}</td>
+                    <td class="small font-monospace opacity-50">${orderId}</td>
                 </tr>
             `,
-            recentHtml: `
+            recent: `
                 <tr>
-                    <td class="small">${(o.Timestamp || '').split(',')[1] || o.Timestamp}</td>
-                    <td class="fw-bold">${o.Name}</td>
+                    <td class="small">${displayTimeShort}</td>
+                    <td class="fw-bold">${o.Name || o.name || 'Patient'}</td>
+                    <td class="small">${waIcon}${phone || '—'}</td>
                     <td><span class="badge ${badge}">${label}</span></td>
-                    <td class="small">${treatments || 'Session'}</td>
-                    <td class="small opacity-50">${o.ID}</td>
+                    <td class="small opacity-75">${detailStr}</td>
+                    <td class="fw-bold">₹${totalVal}</td>
+                    <td class="small opacity-50">${orderId}</td>
                 </tr>
             `
         };
     });
 
-    fullBody.innerHTML = rows.map(r => r.html).join('');
-    recentBody.innerHTML = rows.slice(0, 10).map(r => r.recentHtml).join('');
+    fullBody.innerHTML = rows.map(r => r.full).join('');
+    recentBody.innerHTML = rows.slice(0, 10).map(r => r.recent).join('');
 }
 
 function renderLogsTable(logs) {
@@ -439,12 +488,13 @@ function calculateStats(orders) {
 }
 
 // ─── Modals ───
-function openAppointmentModal() { document.getElementById('appointment-modal').style.display = 'flex'; }
-function closeAppointmentModal() { document.getElementById('appointment-modal').style.display = 'none'; }
+function openOrderModal() { document.getElementById('appointment-modal').style.display = 'flex'; }
+function closeOrderModal() { document.getElementById('appointment-modal').style.display = 'none'; }
 
-async function submitManualAppointment() {
-    const token = localStorage.getItem('hh_admin_token');
+async function submitManualOrder() {
+    const token = sessionStorage.getItem('hh_admin_token');
     const btn = document.getElementById('submit-appointment');
+    if (!btn) return;
 
     const name = document.getElementById('m-name').value;
     const phone = document.getElementById('m-phone').value;
@@ -453,14 +503,13 @@ async function submitManualAppointment() {
 
     const days = {};
     document.querySelectorAll('.session-day').forEach(inp => {
-        const val = parseInt(inp.value || 0);
-        if (val > 0) days[inp.getAttribute('data-day')] = val;
+        if (inp.value) days[inp.getAttribute('data-day')] = inp.value;
     });
 
     if (!name || !fee) { alert('Name and Fee are required'); return; }
 
     btn.disabled = true;
-    btn.innerText = 'Working...';
+    btn.innerText = 'Saving...';
 
     const payload = {
         customerName: name,
@@ -479,40 +528,38 @@ async function submitManualAppointment() {
         });
 
         if (res.ok) {
-            alert('Success! Appointment added and synced.');
-            closeAppointmentModal();
+            alert('Success! Manual order saved.');
+            closeOrderModal();
             loadAll();
             // Clear inputs
             document.getElementById('m-name').value = '';
             document.getElementById('m-phone').value = '';
             document.getElementById('m-fee').value = '';
-            document.querySelectorAll('.session-day').forEach(i => i.value = 0);
+            document.querySelectorAll('.session-day').forEach(i => i.value = '');
         } else {
-            alert('Error adding appointment. Check logs.');
+            alert('Error adding order. Check logs.');
         }
     } catch (e) {
         alert('API error: ' + e.message);
     } finally {
         btn.disabled = false;
-        btn.innerText = 'Confirm & Sync to Calendar';
+        btn.innerText = 'Save Order to Cloud';
     }
 }
 
 function logout() {
-    localStorage.removeItem('hh_admin_token');
+    sessionStorage.removeItem('hh_admin_token');
     location.reload();
 }
 
-function initDashboard() {
-    // Basic setup if needed
-}
-
+// Global Exports
 window.loadAll = loadAll;
 window.loadOrders = loadOrders;
 window.loadLogs = loadLogs;
 window.loadProducts = loadProducts;
-window.openAppointmentModal = openAppointmentModal;
-window.closeAppointmentModal = closeAppointmentModal;
+window.openOrderModal = openOrderModal;
+window.closeOrderModal = closeOrderModal;
+window.submitManualOrder = submitManualOrder;
 window.openProductModal = openProductModal;
 window.closeProductModal = closeProductModal;
 window.editProduct = editProduct;
