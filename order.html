@@ -1241,10 +1241,10 @@
                                     <span style="font-size: 0.8rem; font-weight: 600; color: #4a5c3e;">Secure Verification</span>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <input class="f-input text-center fw-bold" type="text" id="otp-input" placeholder="0 0 0 0" maxlength="4" inputmode="numeric" style="letter-spacing: 5px; flex-grow: 1;">
+                                    <input class="f-input text-center fw-bold" type="text" id="otp-input" placeholder="0 0 0 0 0 0" maxlength="6" inputmode="numeric" style="letter-spacing: 5px; flex-grow: 1;">
                                     <button class="btn-verify" type="button" id="btn-verify-otp" style="background: #1a2215; color: white; border: none; border-radius: 10px; padding: 0 20px; font-weight: 600;">Verify</button>
                                 </div>
-                                <div class="small text-muted mt-2" style="font-size: 0.7rem;">Enter the code from our SMS system.</div>
+                                <div class="small text-muted mt-2" style="font-size: 0.7rem;">Enter the 6-digit code received via SMS.</div>
                             </div>
                             <div id="otp-success-msg" class="mt-2"></div>
                             <input type="hidden" id="is-phone-verified" value="false">
@@ -1391,9 +1391,11 @@
     <script src="assets/web/assets/jquery/jquery.mind3c6.js"></script>
     <script src="assets/bootstrap/js/bootstrap.bundle.mind3c6.js"></script>
     <script src="assets/dropdown/js/navbar-dropdownd3c6.js"></script>
-    <script src="assets/js/order-logic.js?v=1.4"></script>
-    <script src="assets/js/cart-logic.js?v=1.4"></script>
-    <script src="assets/js/order-ui.js?v=1.4"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="assets/js/order-logic.js?v=1.5"></script>
+    <script src="assets/js/cart-logic.js?v=1.5"></script>
+    <script src="assets/js/order-ui.js?v=1.5"></script>
 
     <!-- Floating Mobile Cart Bar -->
     <div id="mobile-cart-bar" onclick="scrollToCart()" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:1040; background: linear-gradient(135deg, #6b8c00, #8aaf00); color:#fff; padding: 12px 20px; cursor:pointer; box-shadow: 0 -4px 20px rgba(0,0,0,0.25); border-radius: 16px 16px 0 0;">

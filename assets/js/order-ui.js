@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── OTP flow ──────────────────────────────────────────────────────────────
     document.getElementById('btn-send-otp')?.addEventListener('click', async () => {
         const phone = document.getElementById('phone').value.trim();
+        const code = document.getElementById('phone-code')?.value || '+91';
         if (!phone || phone.length < 7) {
             showFieldError('phone', 'Enter a valid phone number first.');
             return;
@@ -93,22 +94,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const btn = document.getElementById('btn-send-otp');
         btn.disabled = true;
+        btn.textContent = 'Sending…';
+
+        try {
+            const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3002' : '';
+            const resp = await fetch(`${API_BASE}/api/send-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: `${code} ${phone}` })
+            });
+            const data = await resp.json();
+
+            if (!resp.ok || !data.success) {
+                showFieldError('phone', data.error || 'Failed to send OTP. Try again.');
+                btn.disabled = false;
+                btn.textContent = 'Send OTP';
+                return;
+            }
+
+            // Show OTP input
+            const otpSection = document.getElementById('otp-section');
+            if (otpSection) otpSection.style.display = 'block';
+            document.getElementById('otp-input')?.focus();
+            btn.textContent = 'Resend OTP';
+            btn.disabled = false;
+
+            const successMsg = document.getElementById('otp-success-msg');
+            if (successMsg) successMsg.innerHTML = '<span style="color:var(--green);font-size:0.85rem;">OTP sent to your phone. Valid for 10 minutes.</span>';
+
+        } catch (err) {
+            showFieldError('phone', 'Network error. Please try again.');
+            btn.disabled = false;
+            btn.textContent = 'Send OTP';
+        }
+    });
+
+    document.getElementById('btn-verify-otp')?.addEventListener('click', async () => {
+        const phone = document.getElementById('phone').value.trim();
+        const code = document.getElementById('phone-code')?.value || '+91';
+        const otpInput = document.getElementById('otp-input');
+        const otp = otpInput?.value.trim();
+
+        if (!otp || otp.length !== 6) {
+            if (otpInput) otpInput.classList.add('is-invalid');
+            return;
+        }
+
+        const btn = document.getElementById('btn-verify-otp');
+        btn.disabled = true;
         btn.textContent = 'Verifying…';
 
-        // Simulate seamless verification
-        await new Promise(r => setTimeout(r, 700));
+        try {
+            const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3002' : '';
+            const resp = await fetch(`${API_BASE}/api/send-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: `${code} ${phone}`, otp, action: 'verify' })
+            });
+            const data = await resp.json();
 
-        btn.textContent = 'Verified ✓';
-        btn.classList.add('btn-success');
-        btn.classList.remove('btn-secondary');
-        document.getElementById('is-phone-verified').value = 'true';
-        document.getElementById('phone').readOnly = true;
+            if (!resp.ok || !data.verified) {
+                if (otpInput) otpInput.classList.add('is-invalid');
+                btn.disabled = false;
+                btn.textContent = 'Verify OTP';
+                const msg = document.getElementById('otp-success-msg');
+                if (msg) msg.innerHTML = `<span style="color:#c0392b;font-size:0.85rem;">${data.error || 'Incorrect OTP. Try again.'}</span>`;
+                return;
+            }
 
-        const otpGroup = document.getElementById('otp-section');
-        if (otpGroup) otpGroup.style.display = 'none';
+            // Verified!
+            document.getElementById('is-phone-verified').value = 'true';
+            document.getElementById('phone').readOnly = true;
+            if (otpInput) otpInput.readOnly = true;
+            document.getElementById('otp-section').style.display = 'none';
+            document.getElementById('btn-send-otp').style.display = 'none';
 
-        const successMsg = document.getElementById('otp-success-msg');
-        if (successMsg) successMsg.innerHTML = '<span class="verified-badge">✅ Phone Verified</span>';
+            const successMsg = document.getElementById('otp-success-msg');
+            if (successMsg) successMsg.innerHTML = '<span class="verified-badge">✅ Phone Verified</span>';
+
+        } catch (err) {
+            btn.disabled = false;
+            btn.textContent = 'Verify OTP';
+            const msg = document.getElementById('otp-success-msg');
+            if (msg) msg.innerHTML = '<span style="color:#c0392b;font-size:0.85rem;">Network error. Please try again.</span>';
+        }
     });
 
     // ── Form submission ────────────────────────────────────────────────────────
@@ -179,12 +248,87 @@ document.addEventListener('DOMContentLoaded', () => {
             paymentId: esc(paymentId)
         };
 
-        const submitBtn = bookingForm.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Placing Order…';
+        const submitBtn = document.getElementById('btn-place-order');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loader-dots">Processing…</span>';
+        }
 
         try {
             const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3002' : '';
+            
+            // ── Razorpay Payment Path ──────────────────────────────────────────
+            if (payType === 'online') {
+                const rpRes = await fetch(`${API_BASE}/api/razorpay-order`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: total, paymentId })
+                });
+                const rpData = await rpRes.json();
+
+                if (!rpRes.ok || !rpData.orderId) {
+                    throw new Error(rpData.error || 'Payment gateway failed. Try again.');
+                }
+
+                const options = {
+                    key: rpData.key,
+                    amount: rpData.amount,
+                    currency: rpData.currency,
+                    name: "Hope & Heal Clinic",
+                    description: "Clinical Products Order",
+                    order_id: rpData.orderId,
+                    handler: async function (response) {
+                        // After payment success, verify on server first
+                        const vResp = await fetch(`${API_BASE}/api/razorpay-order?verify=1&razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_signature=${response.razorpay_signature}`);
+                        const vData = await vResp.json();
+                        
+                        if (vData.verified) {
+                            payload.razorpay_payment_id = response.razorpay_payment_id;
+                            // Proceed to send notifications
+                            sendNotifications(payload, cart, total, API_BASE);
+                        } else {
+                            alert("Payment verification failed. Please contact the clinic.");
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = `🛒 Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
+                        }
+                    },
+                    prefill: {
+                        name: name,
+                        email: email,
+                        contact: phone
+                    },
+                    theme: { color: "#6b8c00" },
+                    modal: {
+                        ondismiss: function() {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = `🛒 Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
+                        }
+                    }
+                };
+                const rzp = new Razorpay(options);
+                rzp.open();
+                return; // Wait for callback
+            }
+
+            // ── Offline Path (UPI/GPay manual check or COD if it was there) ───────
+            await sendNotifications(payload, cart, total, API_BASE);
+
+        } catch (err) {
+            console.error('Order failed:', err);
+            alert(err.message || 'Connection failed. Please try again or call 84690 22764.');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `🛒 Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
+            }
+        }
+    });
+
+    async function sendNotifications(payload, cart, total, API_BASE) {
+        const submitBtn = document.getElementById('btn-place-order');
+        const paymentId = payload.paymentId;
+        const email = payload.customer.email;
+
+        try {
             const res = await fetch(`${API_BASE}/api/notify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -192,34 +336,57 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (res.ok) {
+                const data = await res.json();
                 document.getElementById('ref-id').innerText = paymentId;
-                
+
+                // ── Send emails client-side via EmailJS SDK
+                if (data.emailParams && typeof emailjs !== 'undefined') {
+                    const ep = data.emailParams;
+                    if (ep.serviceId && ep.publicKey) {
+                        emailjs.init(ep.publicKey);
+                        // Admin notification
+                        if (ep.ownerTemplate) {
+                            emailjs.send(ep.serviceId, ep.ownerTemplate, ep.owner)
+                                .catch(err => console.warn('Admin email failed:', err));
+                        }
+                        // Customer receipt
+                        if (ep.customerTemplate && email) {
+                            emailjs.send(ep.serviceId, ep.customerTemplate, ep.customer)
+                                .catch(err => console.warn('Customer email failed:', err));
+                        }
+                    }
+                }
+
                 // Pre-fill WhatsApp Receipt
                 const waPhone = '918469022764';
                 const itemsList = cart.map(i => `• ${i.name} (x${i.quantity || 1})`).join('\n');
-                const waMsg = encodeURIComponent(`Hello Hope & Heal Team,\n\nI have just placed an order!\n\nReference: ${paymentId}\nItems:\n${itemsList}\nTotal: ₹${total.toFixed(2)}\n\nThank you!`);
+                const waMsg = encodeURIComponent(`Hello Hope & Heal Team,\n\nI have just placed an order!\n\nReference: ${paymentId}\nItems:\n${itemsList}\nTotal: \u20B9${total.toFixed(2)}\n\nThank you!`);
                 const waBtn = document.getElementById('btn-wa-receipt');
-                if(waBtn) waBtn.href = `https://wa.me/${waPhone}?text=${waMsg}`;
+                if (waBtn) waBtn.href = `https://wa.me/${waPhone}?text=${waMsg}`;
 
                 try {
                     localStorage.removeItem('hh_cart');
                     if (window.cart) window.cart.length = 0;
                     if (typeof window.updateUI === 'function') window.updateUI();
                 } catch (e) { }
-                showToast("Order placed successfully!");
+
+                showToast('Order placed successfully!');
                 const modal = new bootstrap.Modal(document.getElementById('successModal'));
                 modal.show();
             } else {
-                alert('Something went wrong. Please call/WhatsApp 84690 22764 to place your order.');
+                const errData = await res.json().catch(() => ({}));
+                alert(errData.error || 'Something went wrong. Please call/WhatsApp 84690 22764.');
             }
         } catch (err) {
-            console.error('Order failed:', err);
-            alert('Connection failed. Please try again or call 84690 22764.');
+            console.error('Notification failed:', err);
+            alert('Something went wrong. Please call/WhatsApp 84690 22764 to confirm your order.');
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `🛒 Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `🛒 Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
+            }
         }
-    });
+    }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
     function showFieldError(fieldId, msg) {
@@ -275,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 stateSelect_p.value = 'Gujarat';
                             }
                         }
-                        refreshTotals();
+                        if (typeof refreshTotals === 'function') refreshTotals();
                     }
                 }
             } catch (err) { console.error('Pincode lookup failed:', err); }

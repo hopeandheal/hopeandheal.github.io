@@ -175,43 +175,37 @@ export default async function handler(req, res) {
     // ── 1. Telegram
     try { await sendTelegram(customer, items, paymentId, total); } catch (e) { log.error('telegram_failed', { e: e.message }); }
 
-    // ── 2. Admin Email
-    const OWNER_TPL = process.env.EMAILJS_TEMPLATE_OWNER;
-    if (OWNER_TPL) {
-        try {
-            await sendEmail(OWNER_TPL, {
+    // ── 2. Sheets
+    try { await writeOrder(customer, items, paymentId, deliveryCost || 0, total); } catch (e) { log.error('sheets_failed', { e: e.message }); }
+
+    // ── 3. Calendar
+    try { await createOrderCalendarEvents(customer, items, paymentId, deliveryCost || 0); } catch (e) { log.error('calendar_failed', { e: e.message }); }
+
+    // NOTE: Emails are sent client-side via EmailJS SDK (browser environment required)
+    // Return email params so the client can fire them directly
+    return res.status(200).json({
+        success: true,
+        emailParams: {
+            ownerTemplate: process.env.EMAILJS_TEMPLATE_OWNER || null,
+            customerTemplate: process.env.EMAILJS_TEMPLATE_CUSTOMER || null,
+            serviceId: process.env.EMAILJS_SERVICE_ID || null,
+            publicKey: process.env.EMAILJS_PUBLIC_KEY || null,
+            owner: {
                 patient_name: sanitise(customer.name),
                 patient_phone: sanitise(customer.phone),
                 address: sanitise(customer.address || 'Clinic Pickup'),
                 order_type: customer.type === 'delivery' ? 'Home Delivery' : 'Clinic Pickup',
                 treatments_breakdown: breakdown,
-                total: `₹${Number(total).toFixed(2)}`,
-                payment_id: paymentId,
-                subject: `🌿 New Order: ${sanitise(customer.name)}`
-            }, 'owner');
-        } catch (e) { log.error('admin_email_failed', { e: e.message }); }
-    }
-
-    // ── 3. Patient Receipt
-    const PATIENT_TPL = process.env.EMAILJS_TEMPLATE_CUSTOMER;
-    if (PATIENT_TPL && customer.email) {
-        try {
-            await sendEmail(PATIENT_TPL, {
+                total: `\u20B9${Number(total).toFixed(2)}`,
+                payment_id: paymentId
+            },
+            customer: {
                 to_name: sanitise(customer.name).split(' ')[0],
                 to_email: sanitise(customer.email),
                 day_breakdown: breakdown,
-                total_amount: `₹${Number(total).toFixed(2)}`,
-                ref_id: paymentId,
-                subject: `Your Hope & Heal Receipt — ${paymentId}`
-            }, 'patient');
-        } catch (e) { log.error('patient_email_failed', { e: e.message }); }
-    }
-
-    // ── 4. Sheets
-    try { await writeOrder(customer, items, paymentId, deliveryCost || 0, total); } catch (e) { log.error('sheets_failed', { e: e.message }); }
-
-    // ── 5. Calendar
-    try { await createOrderCalendarEvents(customer, items, paymentId, deliveryCost || 0); } catch (e) { log.error('calendar_failed', { e: e.message }); }
-
-    return res.status(200).json({ success: true });
+                total_amount: `\u20B9${Number(total).toFixed(2)}`,
+                ref_id: paymentId
+            }
+        }
+    });
 }
