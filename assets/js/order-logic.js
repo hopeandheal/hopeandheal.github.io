@@ -123,4 +123,10 @@ function renderTreatments(container) {
             this.parentElement.innerHTML = '<div class="product-img-placeholder">🌿</div>';
         });
     });
+
+    // Update count badge
+    const badge = document.getElementById('products-count-badge');
+    if (badge) {
+        badge.textContent = `${TREATMENTS.length} item${TREATMENTS.length !== 1 ? 's' : ''} available`;
+    }
 }

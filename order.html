@@ -235,6 +235,47 @@
         }
 
         /* ── Products section header row ── */
+        /* ── Products Section Header ── */
+        .products-section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-soft);
+        }
+
+        .products-section-title {
+            font-family: 'Cormorant Garamond', 'Playfair Display', serif !important;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 700;
+            color: var(--ink) !important;
+            line-height: 1.1;
+            margin: 0 0 0.3rem;
+        }
+
+        .products-section-sub {
+            font-size: 0.875rem;
+            color: var(--ink-muted);
+            margin: 0;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .products-count-badge {
+            display: inline-flex;
+            align-items: center;
+            background: var(--green-pale);
+            color: var(--green-dark);
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.35rem 0.85rem;
+            border-radius: 50px;
+            border: 1px solid var(--border);
+            white-space: nowrap;
+            margin-left: 1rem;
+            flex-shrink: 0;
+        }
+
         .products-header {
             display: flex;
             align-items: center;
@@ -1106,7 +1147,13 @@
 
         <!-- Left: Products -->
         <div>
-            <div class="section-label">Available Products</div>
+            <div class="products-section-header">
+                <div class="products-section-header-left">
+                    <h2 class="products-section-title">Our Products</h2>
+                    <p class="products-section-sub">Handcrafted homoeopathic remedies — add to cart and checkout securely</p>
+                </div>
+                <span class="products-count-badge" id="products-count-badge"></span>
+            </div>
             <div class="products-grid" id="treatments-container">
                 <div style="grid-column:1/-1;text-align:center;padding:3rem 0;">
                     <div class="loader"></div>
