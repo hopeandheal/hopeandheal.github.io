@@ -798,6 +798,8 @@
             overflow: hidden;
             background: var(--white);
             transition: border-color 0.2s, box-shadow 0.2s;
+            height: 46px;
+            align-items: center;
         }
 
         .phone-row:focus-within {
@@ -810,24 +812,24 @@
             outline: none;
             background: var(--green-pale);
             border-right: 1.5px solid var(--border);
-            padding: 0 0.7rem;
+            padding: 0 0.5rem;
             font-size: 0.88rem;
             color: var(--ink);
             cursor: pointer;
-            min-width: 80px;
-            max-width: 88px;
-            -webkit-appearance: none;
-            appearance: none;
+            min-width: 75px;
+            max-width: 85px;
+            height: 100%;
         }
 
         .phone-num {
             flex: 1;
             border: none;
             outline: none;
-            padding: 0.7rem 0.75rem;
+            padding: 0 0.75rem;
             font-size: 0.92rem;
             font-family: inherit;
             color: var(--ink);
+            height: 100%;
             background: transparent;
         }
 
@@ -1221,7 +1223,7 @@
                         <!-- Phone -->
                         <div class="f-group">
                             <label class="f-label">Phone & Verification</label>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-2 align-items-center">
                                 <div class="phone-row flex-grow-1">
                                     <select class="phone-cc" id="phone-code" aria-label="Country code">
                                         <option value="+91" selected>🇮🇳 +91</option>
@@ -1230,7 +1232,7 @@
                                     </select>
                                     <input class="phone-num" type="tel" id="phone" placeholder="98765 43210" autocomplete="tel" required>
                                 </div>
-                                <button class="btn-otp-action" type="button" id="btn-send-otp" style="white-space:nowrap; border-radius:12px; border:1px solid #d1dbca; background:white; padding:0 15px; font-weight:600; font-size:0.85rem; color:#4a5c3e;">Send OTP</button>
+                                <button class="btn-otp-action" type="button" id="btn-send-otp" style="white-space:nowrap; border-radius:12px; border:1px solid #d1dbca; background:white; padding:0 15px; font-weight:600; font-size:0.85rem; color:#4a5c3e; height: 46px;">Send OTP</button>
                             </div>
                             <div class="f-error" id="err-phone">Enter a valid phone number.</div>
 
