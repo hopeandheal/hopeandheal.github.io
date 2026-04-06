@@ -181,16 +181,13 @@ export default async function handler(req, res) {
     // ── 3. Calendar
     try { await createOrderCalendarEvents(customer, items, paymentId, deliveryCost || 0); } catch (e) { log.error('calendar_failed', { e: e.message }); }
 
-    // NOTE: Emails are sent client-side via EmailJS SDK (browser environment required)
-    // Return email params so the client can fire them directly
-    return res.status(200).json({
-        success: true,
-        emailParams: {
-            ownerTemplate: process.env.EMAILJS_TEMPLATE_OWNER || null,
-            customerTemplate: process.env.EMAILJS_TEMPLATE_CUSTOMER || null,
-            serviceId: process.env.EMAILJS_SERVICE_ID || null,
-            publicKey: process.env.EMAILJS_PUBLIC_KEY || null,
-            owner: {
+    // ── 4. Emails (Server-Side)
+    const ownerTemplate = process.env.EMAILJS_TEMPLATE_OWNER;
+    const customerTemplate = process.env.EMAILJS_TEMPLATE_CUSTOMER;
+
+    if (ownerTemplate) {
+        try {
+            await sendEmail(ownerTemplate, {
                 patient_name: sanitise(customer.name),
                 patient_phone: sanitise(customer.phone),
                 address: sanitise(customer.address || 'Clinic Pickup'),
@@ -198,14 +195,21 @@ export default async function handler(req, res) {
                 treatments_breakdown: breakdown,
                 total: `\u20B9${Number(total).toFixed(2)}`,
                 payment_id: paymentId
-            },
-            customer: {
+            }, 'owner');
+        } catch (e) { log.error('email_owner_failed', { e: e.message }); }
+    }
+
+    if (customerTemplate && customer.email) {
+        try {
+            await sendEmail(customerTemplate, {
                 to_name: sanitise(customer.name).split(' ')[0],
                 to_email: sanitise(customer.email),
                 day_breakdown: breakdown,
                 total_amount: `\u20B9${Number(total).toFixed(2)}`,
                 ref_id: paymentId
-            }
-        }
-    });
+            }, 'customer');
+        } catch (e) { log.error('email_customer_failed', { e: e.message }); }
+    }
+
+    return res.status(200).json({ success: true });
 }
