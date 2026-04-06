@@ -81,7 +81,7 @@ export default async function handler(req, res) {
     }
 
     const { password } = req.body || {};
-    const ADMIN_PASS = process.env.ADMIN_PASSWORD || 'dev-admin';
+    const ADMIN_PASS = process.env.ADMIN_PASSWORD || process.env.ADMIN_PWD || 'dev-admin';
     const JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'dev-secret-key-123';
 
     const correct = safeCompare(String(password || ''), ADMIN_PASS);

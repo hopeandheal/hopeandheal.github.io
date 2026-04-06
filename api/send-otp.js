@@ -57,8 +57,8 @@ export default async function handler(req, res) {
 
     const FAST2SMS_KEY = process.env.FAST2SMS_API_KEY;
 
-    if (cleanPhone === '+910000000000') {
-        otpCache.set(cleanPhone, { otp: '000000', expires: Date.now() + 10 * 60 * 1000 });
+    if (cleanPhone === '0000000000') {
+        otpStore.set(cleanPhone, { otp: '000000', expiry: Date.now() + OTP_EXPIRY_MS, attempts: 0 });
         return res.status(200).json({ success: true, note: 'Test number bypassed' });
     }
 
