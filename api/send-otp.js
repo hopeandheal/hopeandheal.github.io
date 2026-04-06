@@ -1,7 +1,8 @@
 /**
- * api/send-otp.js — OTP via Fast2SMS (free Indian SMS API)
+ * api/send-otp.js — OTP via Fast2SMS (Quick route, no DLT required)
  * POST { phone } → sends 6-digit OTP, stores server-side for verification
- * POST { phone, otp } → verifies OTP
+ * POST { phone, otp, action:'verify' } → verifies OTP
+ * Fallback: if SMS fails, OTP is sent to admin Telegram
  */
 
 import log from './logger.js';
@@ -12,6 +13,20 @@ const MAX_OTP_ATTEMPTS = 5;
 
 function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function sendViaTelegram(phone, otp) {
+    const token = process.env.TG_BOT_TOKEN;
+    const chatId = process.env.TG_CHAT_ID;
+    if (!token || !chatId) return;
+    const msg = `🔐 OTP for order verification\nPhone: +91${phone}\nOTP: *${otp}*\n\nShare this with the customer.`;
+    try {
+        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'Markdown' })
+        });
+    } catch (e) { /* silent */ }
 }
 
 export default async function handler(req, res) {
@@ -26,7 +41,7 @@ export default async function handler(req, res) {
 
     const cleanPhone = phone.replace(/\D/g, '').slice(-10); // last 10 digits
 
-    // ── VERIFY path ──────────────────────────────────────────────────────────
+    // ── VERIFY path ───────────────────────────────────────────────────────────
     if (action === 'verify') {
         if (!submittedOtp) return res.status(400).json({ error: 'OTP required' });
 
@@ -51,50 +66,60 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, verified: true });
     }
 
-    // ── SEND path ─────────────────────────────────────────────────────────────
+    // ── SEND path ──────────────────────────────────────────────────────────────
     const otp = generateOTP();
     otpStore.set(cleanPhone, { otp, expiry: Date.now() + OTP_EXPIRY_MS, attempts: 0 });
 
-    const FAST2SMS_KEY = process.env.FAST2SMS_API_KEY;
-
+    // Test number bypass
     if (cleanPhone === '0000000000') {
         otpStore.set(cleanPhone, { otp: '000000', expiry: Date.now() + OTP_EXPIRY_MS, attempts: 0 });
         return res.status(200).json({ success: true, note: 'Test number bypassed' });
     }
 
+    const FAST2SMS_KEY = process.env.FAST2SMS_API_KEY;
+
     if (!FAST2SMS_KEY) {
-        // Dev fallback: log OTP but don't send — to aid debugging
         log.info('otp_generated_no_sms_key', { phone: cleanPhone, otp });
-        return res.status(200).json({ success: true, _devOtp: otp, note: 'SMS key not configured' });
+        await sendViaTelegram(cleanPhone, otp);
+        return res.status(200).json({ success: true, note: 'OTP via Telegram (no SMS key)' });
     }
 
     try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+
         const smsRes = await fetch('https://www.fast2sms.com/dev/bulkV2', {
             method: 'POST',
+            signal: controller.signal,
             headers: {
                 'authorization': FAST2SMS_KEY,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                route: 'otp',
-                variables_values: otp,
+                route: 'q',
+                message: `Your Hope & Heal verification code is ${otp}. Valid for 10 minutes. Do not share with anyone.`,
                 numbers: cleanPhone,
                 flash: 0
             })
         });
+        clearTimeout(timeout);
 
         const smsData = await smsRes.json();
 
-        if (!smsData.return) {
-            log.error('fast2sms_failed', { resp: JSON.stringify(smsData) });
-            return res.status(500).json({ error: 'Failed to send SMS. Please try again.' });
+        if (smsData.return) {
+            log.info('otp_sent_sms', { phone: cleanPhone });
+            return res.status(200).json({ success: true });
         }
 
-        log.info('otp_sent', { phone: cleanPhone });
-        return res.status(200).json({ success: true });
+        // SMS failed — fall back to Telegram so admin can relay OTP to customer
+        log.warn('fast2sms_failed_telegram_fallback', { resp: JSON.stringify(smsData), phone: cleanPhone });
+        await sendViaTelegram(cleanPhone, otp);
+        return res.status(200).json({ success: true, note: 'OTP via Telegram (SMS provider issue)' });
 
     } catch (e) {
+        // Network error / timeout — fall back to Telegram
         log.error('otp_send_exception', { e: e.message });
-        return res.status(500).json({ error: 'SMS service unavailable. Please try again.' });
+        await sendViaTelegram(cleanPhone, otp);
+        return res.status(200).json({ success: true, note: 'OTP via Telegram (network error)' });
     }
 }
