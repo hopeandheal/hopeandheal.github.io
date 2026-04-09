@@ -11,24 +11,30 @@ import log from './logger.js';
 
 // ─── IP Lockout ───────────────────────────────────────────────────────────────
 const failMap = new Map();
-const MAX_ATTEMPTS = 3;
-const LOCKOUT_MS = 60 * 60 * 1000; // 1 hour
+const MAX_ATTEMPTS = 5; // Increased to be more forgiving
+const LOCKOUT_MS = 15 * 60 * 1000; // 15 mins
 const WINDOW_MS = 15 * 60 * 1000; // reset count after 15 min inactivity
 
-function checkAndRecord(ip, success) {
+function checkAndRecord(ip, resultType) {
     const now = Date.now();
     const key = `admin::${ip}`;
     const entry = failMap.get(key) || { count: 0, lockedUntil: 0, lastFail: 0 };
+
+    // Check only mode (returned at start of handler)
+    if (resultType === 'check') {
+        return { locked: entry.lockedUntil > now, remaining: entry.lockedUntil - now };
+    }
 
     if (entry.lockedUntil && now < entry.lockedUntil) {
         return { locked: true, remaining: entry.lockedUntil - now };
     }
 
-    if (success) {
+    if (resultType === 'success') {
         failMap.delete(key);
         return { locked: false };
     }
 
+    // resultType === 'failure'
     if (now - entry.lastFail > WINDOW_MS) entry.count = 0;
     entry.count++;
     entry.lastFail = now;
@@ -74,7 +80,7 @@ export default async function handler(req, res) {
         return res.status(415).json({ error: 'Must be JSON' });
     }
 
-    const pre = checkAndRecord(ip, false);
+    const pre = checkAndRecord(ip, 'check');
     if (pre.locked) {
         const mins = Math.ceil(pre.remaining / 60000);
         return res.status(429).json({ error: `Too many attempts. Locked for ${mins} mins.` });
@@ -87,14 +93,14 @@ export default async function handler(req, res) {
     const correct = safeCompare(String(password || ''), ADMIN_PASS);
 
     if (!correct) {
-        const result = checkAndRecord(ip, false);
+        checkAndRecord(ip, 'failure');
         const entry = failMap.get(`admin::${ip}`);
         const left = Math.max(0, MAX_ATTEMPTS - (entry?.count || 0));
         log.warn('admin_auth_failed', { ip, left });
         return res.status(401).json({ error: `Invalid credentials. ${left} attempts remaining.` });
     }
 
-    checkAndRecord(ip, true);
+    checkAndRecord(ip, 'success');
     const expiresAt = Math.floor(Date.now() / 1000) + (24 * 3600);
     const token = await createJWT({ role: 'admin', exp: expiresAt }, JWT_SECRET);
 
