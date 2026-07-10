@@ -1,7 +1,15 @@
 node_modules/
 .env
 .env.local
+.env*.local
+.env.vercel
 .DS_Store
 dist/
 .vercel
-.env*.local
+*.log
+hts-cache/
+hts-log.txt
+test_*.mjs
+test_*.js
+test_*.cjs
+*_backup.html

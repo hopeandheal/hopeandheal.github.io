@@ -1,6 +1,6 @@
 /**
  * assets/js/order-ui.js
- * Handles checkout flow: OTP, delivery fee, form submit.
+ * Handles checkout flow: delivery fee calculation, form validation and submit.
  * Supports Clinic Pickup (Rajkot) and Home Delivery.
  */
 
@@ -59,14 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    document.querySelectorAll('input[name="payType"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            document.getElementById('tile-upi')?.classList.toggle('active', document.getElementById('payUPI').checked);
-            document.getElementById('tile-online')?.classList.toggle('active', document.getElementById('payOnline').checked);
-            refreshTotals();
-        });
-    });
-
     // ── Proceed button ────────────────────────────────────────────────────────
     checkoutBtn.addEventListener('click', () => {
         checkoutBtn.style.display = 'none';
@@ -82,117 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshTotals(); // update totals now that section is visible
     });
 
-    // ── OTP flow ──────────────────────────────────────────────────────────────
-    document.getElementById('btn-send-otp')?.addEventListener('click', async () => {
-        const phone = document.getElementById('phone').value.trim();
-        const code = document.getElementById('phone-code')?.value || '+91';
-        if (!phone || phone.length < 7) {
-            showFieldError('phone', 'Enter a valid phone number first.');
-            return;
-        }
-        clearFieldError('phone');
 
-        const btn = document.getElementById('btn-send-otp');
-        btn.disabled = true;
-        btn.textContent = 'Sending…';
-
-        try {
-            const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3002' : '';
-            const resp = await fetch(`${API_BASE}/api/send-otp`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: `${code} ${phone}` })
-            });
-            const data = await resp.json();
-
-            if (!resp.ok || !data.success) {
-                showFieldError('phone', data.error || 'Failed to send OTP. Try again.');
-                btn.disabled = false;
-                btn.textContent = 'Send OTP';
-                return;
-            }
-
-            // Show OTP input
-            const otpSection = document.getElementById('otp-section');
-            if (otpSection) otpSection.style.display = 'block';
-            document.getElementById('otp-input')?.focus();
-            btn.textContent = 'Resend OTP';
-            btn.disabled = false;
-
-            const successMsg = document.getElementById('otp-success-msg');
-            if (successMsg) successMsg.innerHTML = '<span style="color:var(--green);font-size:0.85rem;">OTP sent to your phone. Valid for 10 minutes.</span>';
-
-        } catch (err) {
-            showFieldError('phone', 'Network error. Please try again.');
-            btn.disabled = false;
-            btn.textContent = 'Send OTP';
-        }
-    });
-
-    document.getElementById('btn-verify-otp')?.addEventListener('click', async () => {
-        const phone = document.getElementById('phone').value.trim();
-        const code = document.getElementById('phone-code')?.value || '+91';
-        const otpInput = document.getElementById('otp-input');
-        const otp = otpInput?.value.trim();
-
-        if (!otp || otp.length !== 6) {
-            if (otpInput) otpInput.classList.add('is-invalid');
-            return;
-        }
-
-        const btn = document.getElementById('btn-verify-otp');
-        btn.disabled = true;
-        btn.textContent = 'Verifying…';
-
-        try {
-            const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3002' : '';
-            const resp = await fetch(`${API_BASE}/api/send-otp`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: `${code} ${phone}`, otp, action: 'verify' })
-            });
-            const data = await resp.json();
-
-            if (!resp.ok || !data.verified) {
-                if (otpInput) otpInput.classList.add('is-invalid');
-                btn.disabled = false;
-                btn.textContent = 'Verify OTP';
-                const msg = document.getElementById('otp-success-msg');
-                if (msg) msg.innerHTML = `<span style="color:#c0392b;font-size:0.85rem;">${data.error || 'Incorrect OTP. Try again.'}</span>`;
-                return;
-            }
-
-            // Verified!
-            document.getElementById('is-phone-verified').value = 'true';
-            document.getElementById('phone').readOnly = true;
-            if (otpInput) otpInput.readOnly = true;
-            document.getElementById('otp-section').style.display = 'none';
-            document.getElementById('btn-send-otp').style.display = 'none';
-
-            const successMsg = document.getElementById('otp-success-msg');
-            if (successMsg) successMsg.innerHTML = '<span class="verified-badge">✅ Phone Verified</span>';
-
-        } catch (err) {
-            btn.disabled = false;
-            btn.textContent = 'Verify OTP';
-            const msg = document.getElementById('otp-success-msg');
-            if (msg) msg.innerHTML = '<span style="color:#c0392b;font-size:0.85rem;">Network error. Please try again.</span>';
-        }
-    });
-
-    // ── Form submission ────────────────────────────────────────────────────────
     bookingForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const cart = window.getCart ? window.getCart() : [];
         if (cart.length === 0) {
             alert('Please select at least one product before placing your order.');
-            return;
-        }
-
-        // Validate phone verification
-        if (document.getElementById('is-phone-verified').value !== 'true') {
-            alert('Please verify your phone number (Send OTP → Enter OTP → Verify).');
             return;
         }
 
@@ -207,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const state = document.getElementById('p-address-state').value;
         const orderType = document.querySelector('input[name="orderType"]:checked')?.value || 'delivery';
         const isPickup = orderType === 'pickup';
-        const payType = document.querySelector('input[name="payType"]:checked')?.value || 'online';
+        const payType = 'upi';
 
         // Basic validation
         if (!name) { showFieldError('p-name', 'Full name is required.'); return; }
@@ -257,68 +145,98 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3002' : '';
             
-            // ── Razorpay Payment Path ──────────────────────────────────────────
-            if (payType === 'online') {
-                const rpRes = await fetch(`${API_BASE}/api/razorpay-order`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: total, paymentId })
-                });
-                const rpData = await rpRes.json();
+            // Show UPI Payment Modal
+            const upiOverlay = document.getElementById('upi-payment-overlay');
+            const upiAmountDisplay = document.getElementById('upi-amount-display');
+            const btnUpiPaid = document.getElementById('btn-upi-paid');
+            const btnUpiCancel = document.getElementById('btn-upi-cancel');
+            const upiCopyBtn = document.getElementById('upi-copy-btn');
 
-                if (!rpRes.ok || !rpData.orderId) {
-                    throw new Error(rpData.error || 'Payment gateway failed. Try again.');
-                }
+            if (upiOverlay && upiAmountDisplay) {
+                upiAmountDisplay.innerText = `₹${total.toFixed(2)}`;
+                
+                // Generate deep links
+                const upiId = "8469022764@paytm";
+                const upiName = encodeURIComponent("Hope & Heal Clinic");
+                const upiNote = encodeURIComponent(`Order ${paymentId}`);
+                
+                // Standard universal UPI scheme
+                const universalLink = `upi://pay?pa=${upiId}&pn=${upiName}&am=${total.toFixed(2)}&cu=INR&tn=${upiNote}`;
+                
+                document.getElementById('upi-gpay-link').href = universalLink;
+                document.getElementById('upi-phonepe-link').href = universalLink;
+                document.getElementById('upi-paytm-link').href = universalLink;
 
-                const options = {
-                    key: rpData.key,
-                    amount: rpData.amount,
-                    currency: rpData.currency,
-                    name: "Hope & Heal Clinic",
-                    description: "Clinical Products Order",
-                    order_id: rpData.orderId,
-                    handler: async function (response) {
-                        // After payment success, verify on server first
-                        const vResp = await fetch(`${API_BASE}/api/razorpay-order?verify=1&razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_signature=${response.razorpay_signature}`);
-                        const vData = await vResp.json();
+                // Setup copy functionality
+                upiCopyBtn.onclick = () => {
+                    navigator.clipboard.writeText(upiId).then(() => {
+                        upiCopyBtn.innerText = "Copied!";
+                        setTimeout(() => {
+                            upiCopyBtn.innerText = "Copy";
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy text: ', err);
+                    });
+                };
+
+                // Setup button event listeners
+                const handlePaidClick = async () => {
+                    btnUpiPaid.disabled = true;
+                    btnUpiPaid.innerHTML = '<span class="loader-dots">Confirming…</span>';
+                    try {
+                        // Send notification / save order
+                        await sendNotifications(payload, cart, total, API_BASE);
                         
-                        if (vData.verified) {
-                            payload.razorpay_payment_id = response.razorpay_payment_id;
-                            // Proceed to send notifications
-                            sendNotifications(payload, cart, total, API_BASE);
-                        } else {
-                            alert("Payment verification failed. Please contact the clinic.");
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = `🛒 Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
+                        // Hide UPI modal
+                        upiOverlay.style.display = 'none';
+                        
+                        // Show success modal with pending note
+                        const successUpiNote = document.getElementById('success-upi-note');
+                        if (successUpiNote) {
+                            successUpiNote.style.display = 'block';
                         }
-                    },
-                    prefill: {
-                        name: name,
-                        email: email,
-                        contact: phone
-                    },
-                    theme: { color: "#6b8c00" },
-                    modal: {
-                        ondismiss: function() {
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = `🛒 Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
-                        }
+                    } catch (err) {
+                        console.error('Failed to place order:', err);
+                        alert(err.message || 'Connection failed. Please try again.');
+                        btnUpiPaid.disabled = false;
+                        btnUpiPaid.innerHTML = '✅ I\'ve Paid — Confirm Order';
+                    } finally {
+                        btnUpiPaid.removeEventListener('click', handlePaidClick);
+                        btnUpiCancel.removeEventListener('click', handleCancelClick);
                     }
                 };
-                const rzp = new Razorpay(options);
-                rzp.open();
-                return; // Wait for callback
-            }
 
-            // ── Offline Path (UPI/GPay manual check or COD if it was there) ───────
-            await sendNotifications(payload, cart, total, API_BASE);
+                const handleCancelClick = () => {
+                    // Hide UPI modal
+                    upiOverlay.style.display = 'none';
+                    
+                    // Re-enable form submit button
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = `Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
+                    }
+                    
+                    // Clean up listeners
+                    btnUpiPaid.removeEventListener('click', handlePaidClick);
+                    btnUpiCancel.removeEventListener('click', handleCancelClick);
+                };
+
+                btnUpiPaid.addEventListener('click', handlePaidClick);
+                btnUpiCancel.addEventListener('click', handleCancelClick);
+
+                // Open the overlay
+                upiOverlay.style.display = 'flex';
+            } else {
+                // Fallback if modal elements aren't present
+                await sendNotifications(payload, cart, total, API_BASE);
+            }
 
         } catch (err) {
             console.error('Order failed:', err);
             alert(err.message || 'Connection failed. Please try again or call 84690 22764.');
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = `🛒 Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
+                submitBtn.innerHTML = `Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
             }
         }
     });
@@ -337,25 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (res.ok) {
                 const data = await res.json();
-                document.getElementById('ref-id').innerText = paymentId;
-
-                // ── Send emails client-side via EmailJS SDK
-                if (data.emailParams && typeof emailjs !== 'undefined') {
-                    const ep = data.emailParams;
-                    if (ep.serviceId && ep.publicKey) {
-                        emailjs.init(ep.publicKey);
-                        // Admin notification
-                        if (ep.ownerTemplate) {
-                            emailjs.send(ep.serviceId, ep.ownerTemplate, ep.owner)
-                                .catch(err => console.warn('Admin email failed:', err));
-                        }
-                        // Customer receipt
-                        if (ep.customerTemplate && email) {
-                            emailjs.send(ep.serviceId, ep.customerTemplate, ep.customer)
-                                .catch(err => console.warn('Customer email failed:', err));
-                        }
-                    }
-                }
+                document.getElementById('ref-id').innerText = data.ref || paymentId;
 
                 // Pre-fill WhatsApp Receipt
                 const waPhone = '918469022764';

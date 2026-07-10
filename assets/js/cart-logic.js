@@ -108,18 +108,12 @@ function updateUI() {
     const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
     const deliveryFee = typeof window.deliveryFee === 'number' ? window.deliveryFee : 50;
 
-    const payOnlineEl = document.getElementById('payOnline');
-    const isOnlinePay = payOnlineEl ? payOnlineEl.checked : true;
-    const serviceFee = isOnlinePay ? Math.round((subtotal + deliveryFee) * 0.02 * 100) / 100 : 0;
-    const finalTotal = subtotal + deliveryFee + serviceFee;
+    const finalTotal = subtotal + deliveryFee;
 
     if (subtotalEl) subtotalEl.innerText = `₹${subtotal.toFixed(2)}`;
     if (feeSpanEl) feeSpanEl.innerText = `₹${deliveryFee.toFixed(2)}`;
 
-    if (svcRowEl && svcSpanEl) {
-        svcRowEl.style.display = serviceFee > 0 ? 'flex' : 'none';
-        svcSpanEl.innerText = `₹${serviceFee.toFixed(2)}`;
-    }
+    if (svcRowEl) svcRowEl.style.display = 'none'; // No service fee
 
     if (totalEl) totalEl.innerText = `₹${finalTotal.toFixed(2)}`;
     if (btnTotalEl) btnTotalEl.innerText = `₹${finalTotal.toFixed(2)}`;

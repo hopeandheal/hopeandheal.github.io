@@ -5,8 +5,8 @@
  * Includes rate limiting, sanitization, and honeypot protection.
  */
 
-import log from './logger.js';
-import { writeLog } from './sheets.js';
+import log from './lib/logger.js';
+import { writeLog } from './lib/sheets.js';
 
 const MAX_BODY_BYTES = 4 * 1024;
 const RATE_LIMIT_MAX = 3;

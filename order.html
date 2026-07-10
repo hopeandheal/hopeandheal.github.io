@@ -826,111 +826,15 @@
             border: none;
             outline: none;
             padding: 0 0.75rem;
-            font-size: 0.92rem;
+            font-size: 1rem;
             font-family: inherit;
             color: var(--ink);
             height: 100%;
             background: transparent;
-        }
-
-        .btn-otp-block {
-            display: block;
-            width: 100%;
-            background: var(--green-light);
-            color: #fff;
-            border: none;
-            border-radius: var(--r-input);
-            padding: 0.7rem 1rem;
-            margin-top: 0.6rem;
-            font-size: 0.88rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s;
-            text-align: center;
-        }
-
-        .btn-otp-block:hover {
-            background: var(--green);
-        }
-
-        .btn-otp-block:disabled {
-            background: #c8d88a;
-            cursor: not-allowed;
-        }
-
-        /* OTP box */
-        .otp-box {
-            background: var(--green-soft);
-            border: 1.5px solid var(--border);
-            border-radius: var(--r-input);
-            padding: 0.9rem 1rem;
-            margin-top: 0.55rem;
-        }
-
-        .otp-hint {
-            font-size: 0.78rem;
-            color: var(--green);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .otp-row {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .otp-input {
-            flex: 1;
             min-width: 0;
-            border: 1.5px solid var(--border);
-            border-radius: var(--r-input);
-            padding: 0.65rem 0.5rem;
-            font-size: 1.1rem;
-            font-weight: 700;
-            letter-spacing: 0.15em;
-            text-align: center;
-            background: var(--white);
-            outline: none;
-            transition: border-color 0.2s;
-            -webkit-appearance: none;
-            appearance: none;
         }
 
-        .otp-input:focus {
-            border-color: var(--green-light);
-        }
 
-        .btn-verify {
-            border: none;
-            outline: none;
-            background: #2a7a30;
-            color: #fff;
-            border-radius: var(--r-input);
-            padding: 0.65rem 0.8rem;
-            font-size: 0.88rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .btn-verify:hover {
-            background: #1e5e24;
-        }
-
-        .verified-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-radius: 12px;
-            padding: 0.28rem 0.85rem;
-            font-size: 0.8rem;
-            font-weight: 700;
-            margin-top: 0.5rem;
-        }
 
         /* Address grid */
         .addr-grid {
@@ -943,7 +847,100 @@
             grid-column: 1 / -1;
         }
 
+        /* UPI Payment Modal */
+        .upi-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 1060;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            backdrop-filter: blur(4px);
+            animation: fadeInBg 0.2s ease;
+        }
+        @keyframes fadeInBg { from { opacity:0; } to { opacity:1; } }
+        .upi-modal-card {
+            background: #fff;
+            border-radius: 24px;
+            max-width: 420px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+            animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp { from { transform:translateY(30px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+        .upi-modal-header {
+            background: linear-gradient(135deg, #a5be00 0%, #6b8c00 100%);
+            padding: 28px 24px 20px;
+            text-align: center;
+            color: #fff;
+        }
+        .upi-modal-icon {
+            width: 64px; height: 64px;
+            background: rgba(255,255,255,0.22);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 12px;
+        }
+        .upi-modal-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 800; margin: 0 0 4px; }
+        .upi-modal-subtitle { font-size: 0.82rem; opacity: 0.85; margin: 0; }
+        .upi-modal-body { padding: 24px; }
+        .upi-amount-box {
+            background: #f0f5e8; border: 2px solid #a5be00; border-radius: 14px;
+            padding: 14px 20px; text-align: center; margin-bottom: 18px;
+        }
+        .upi-amount-label { font-size: 0.72rem; font-weight: 700; color: #7c8e00; text-transform: uppercase; letter-spacing: 0.08em; }
+        .upi-amount-value { font-size: 2rem; font-weight: 800; color: #1a2215; line-height: 1.1; }
+        .upi-id-box {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #f8faf7; border: 1.5px solid var(--border);
+            border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; gap: 10px;
+        }
+        .upi-id-text { font-size: 1rem; font-weight: 700; color: #1a2215; font-family: monospace; }
+        .upi-copy-btn {
+            background: var(--green-pale); border: 1px solid var(--green-light);
+            color: var(--green); border-radius: 8px; padding: 5px 12px;
+            font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .upi-copy-btn:hover { background: #d4e85a; }
+        .upi-apps-label { font-size: 0.78rem; font-weight: 700; color: var(--ink-muted); text-align: center; margin-bottom: 10px; }
+        .upi-apps-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .upi-app-btn {
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            text-decoration: none; border: 1.5px solid var(--border);
+            border-radius: 12px; padding: 10px 14px; transition: all 0.2s;
+            flex: 1; max-width: 110px; background: #fff;
+        }
+        .upi-app-btn:hover { border-color: var(--green-light); background: var(--green-pale); }
+        .upi-app-btn img { width: 32px; height: 32px; border-radius: 8px; object-fit: contain; }
+        .upi-app-btn span { font-size: 0.72rem; font-weight: 700; color: var(--ink); }
+        .upi-divider {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 18px; color: var(--ink-muted); font-size: 0.75rem;
+        }
+        .upi-divider::before, .upi-divider::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
+        .btn-upi-paid {
+            width: 100%; background: linear-gradient(130deg, #3d4a00, #6b8c00);
+            color: #fff; border: none; border-radius: 14px; padding: 1rem;
+            font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 10px;
+        }
+        .btn-upi-paid:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(60,80,0,0.3); }
+        .btn-upi-paid:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-upi-cancel {
+            width: 100%; background: transparent; color: var(--ink-muted);
+            border: 1.5px solid var(--border); border-radius: 14px; padding: 0.75rem;
+            font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-upi-cancel:hover { border-color: #ccc; color: var(--ink); }
+        .upi-note { font-size: 0.72rem; color: var(--ink-muted); text-align: center; margin-top: 12px; line-height: 1.5; }
+
         /* Payment tiles */
+
         .pay-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1222,34 +1219,16 @@
 
                         <!-- Phone -->
                         <div class="f-group">
-                            <label class="f-label">Phone & Verification</label>
-                            <div class="d-flex gap-2 align-items-center">
-                                <div class="phone-row flex-grow-1">
-                                    <select class="phone-cc" id="phone-code" aria-label="Country code">
-                                        <option value="+91" selected>🇮🇳 +91</option>
-                                        <option value="+44">🇬🇧 +44</option>
-                                        <option value="+1">🇺🇸 +1</option>
-                                    </select>
-                                    <input class="phone-num" type="tel" id="phone" placeholder="98765 43210" autocomplete="tel" required>
-                                </div>
-                                <button class="btn-otp-action" type="button" id="btn-send-otp" style="white-space:nowrap; border-radius:12px; border:1px solid #d1dbca; background:white; padding:0 15px; font-weight:600; font-size:0.85rem; color:#4a5c3e; height: 46px;">Send OTP</button>
+                            <label class="f-label" for="phone">Phone Number</label>
+                            <div class="phone-row">
+                                <select class="phone-cc" id="phone-code" aria-label="Country code">
+                                    <option value="+91" selected>+91</option>
+                                    <option value="+44">+44</option>
+                                    <option value="+1">+1</option>
+                                </select>
+                                <input class="phone-num" type="tel" id="phone" placeholder="98765 43210" autocomplete="tel" required>
                             </div>
                             <div class="f-error" id="err-phone">Enter a valid phone number.</div>
-
-                            <!-- OTP -->
-                            <div class="otp-container mt-3" id="otp-section" style="display:none; background: #f8faf7; border: 1px solid #eef2eb; border-radius: 12px; padding: 15px;">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <i class="bi bi-shield-lock" style="color: #7c8e00;"></i>
-                                    <span style="font-size: 0.8rem; font-weight: 600; color: #4a5c3e;">Secure Verification</span>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <input class="f-input text-center fw-bold" type="text" id="otp-input" placeholder="0 0 0 0 0 0" maxlength="6" inputmode="numeric" style="letter-spacing: 5px; flex-grow: 1;">
-                                    <button class="btn-verify" type="button" id="btn-verify-otp" style="background: #1a2215; color: white; border: none; border-radius: 10px; padding: 0 20px; font-weight: 600;">Verify</button>
-                                </div>
-                                <div class="small text-muted mt-2" style="font-size: 0.7rem;">Enter the 6-digit code received via SMS.</div>
-                            </div>
-                            <div id="otp-success-msg" class="mt-2"></div>
-                            <input type="hidden" id="is-phone-verified" value="false">
                         </div>
 
                         <!-- Order Type Toggle -->
@@ -1317,19 +1296,12 @@
                         <!-- Payment -->
                         <div class="f-group">
                             <label class="f-label">Payment Method</label>
-                            <div class="pay-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
-                                <label class="pay-tile active" id="tile-upi" style="width: 100%;">
-                                    <input type="radio" name="payType" id="payUPI" value="upi" checked>
-                                    <span class="pay-tile-icon">📱</span>
-                                    <div class="pay-tile-name">UPI / GPay</div>
-                                    <div class="pay-tile-sub">Manual Payment</div>
-                                </label>
-                                <label class="pay-tile" id="tile-online" style="width: 100%;">
-                                    <input type="radio" name="payType" id="payOnline" value="online">
-                                    <span class="pay-tile-icon">💳</span>
-                                    <div class="pay-tile-name">Debit/Credit</div>
-                                    <div class="pay-tile-sub">Razorpay Secure</div>
-                                </label>
+                            <div style="display:flex; align-items:center; gap:14px; background:#f0f5e8; border:2px solid #a5be00; border-radius:14px; padding:14px 18px; margin-top:0.4rem;">
+                                <span style="font-size:1.8rem;">📱</span>
+                                <div>
+                                    <div style="font-weight:700; font-size:0.95rem; color:#1a2215;">UPI / GPay / PhonePe / Paytm</div>
+                                    <div style="font-size:0.78rem; color:#7c8e00; font-weight:600;">Pay to <span style="font-family:monospace;">8469022764@paytm</span> — instructions shown after placing order</div>
+                                </div>
                             </div>
                         </div>
 
@@ -1345,6 +1317,50 @@
         </div><!-- end sidebar -->
     </div><!-- end shop-layout -->
 
+    <!-- ══════ UPI PAYMENT MODAL ══════ -->
+    <div id="upi-payment-overlay" style="display:none;" class="upi-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="upi-modal-heading">
+        <div class="upi-modal-card">
+            <div class="upi-modal-header">
+                <div class="upi-modal-icon">📱</div>
+                <h2 class="upi-modal-title" id="upi-modal-heading">Complete UPI Payment</h2>
+                <p class="upi-modal-subtitle">Pay the exact amount below to confirm your order</p>
+            </div>
+            <div class="upi-modal-body">
+                <div class="upi-amount-box">
+                    <div class="upi-amount-label">Amount to Pay</div>
+                    <div class="upi-amount-value" id="upi-amount-display">₹0.00</div>
+                </div>
+
+                <div class="upi-apps-label">Open your UPI app to pay instantly</div>
+                <div class="upi-apps-row">
+                    <a id="upi-gpay-link" href="#" class="upi-app-btn" target="_blank" rel="noopener">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/512px-Google_Pay_Logo.svg.png" alt="Google Pay">
+                        <span>GPay</span>
+                    </a>
+                    <a id="upi-phonepe-link" href="#" class="upi-app-btn" target="_blank" rel="noopener">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/PhonePe_Logo.png/800px-PhonePe_Logo.png" alt="PhonePe">
+                        <span>PhonePe</span>
+                    </a>
+                    <a id="upi-paytm-link" href="#" class="upi-app-btn" target="_blank" rel="noopener">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Paytm_Logo_%28standalone%29.svg/2560px-Paytm_Logo_%28standalone%29.svg.png" alt="Paytm">
+                        <span>Paytm</span>
+                    </a>
+                </div>
+
+                <div class="upi-divider">or copy UPI ID manually</div>
+
+                <div class="upi-id-box">
+                    <span class="upi-id-text" id="upi-id-display">8469022764@paytm</span>
+                    <button class="upi-copy-btn" id="upi-copy-btn">Copy</button>
+                </div>
+
+                <button class="btn-upi-paid" id="btn-upi-paid">✅ I've Paid — Confirm Order</button>
+                <button class="btn-upi-cancel" id="btn-upi-cancel">← Go Back &amp; Edit</button>
+                <p class="upi-note">After paying, tap "I've Paid" to confirm your order.<br>Our team will verify &amp; process your order within 2 hours.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- ══════ SUCCESS MODAL ══════ -->
     <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
@@ -1353,10 +1369,14 @@
                     <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
                         <i class="bi bi-check-lg" style="font-size: 3rem;"></i>
                     </div>
-                    <h2 style="font-family: 'Playfair Display', serif; font-weight: 800; margin: 0; font-size: 2rem;">Order Received!</h2>
+                    <h2 style="font-family: 'Playfair Display', serif; font-weight: 800; margin: 0; font-size: 2rem;" id="success-modal-title">Order Confirmed!</h2>
                 </div>
                 <div class="p-5 text-center">
-                    <p class="text-muted fw-500 mb-4 px-2">Your health journey continues with us. We've received your request and our team is already preparing everything.</p>
+                    <!-- Shown only for UPI orders -->
+                    <div id="success-upi-note" style="display:none; background:#fff8e1; border:1.5px solid #f9c846; border-radius:12px; padding:12px 16px; margin-bottom:18px; font-size:0.82rem; color:#7a5c00; font-weight:600;">
+                        ⏳ Payment Pending Verification — We'll confirm once your UPI payment is received. Check your UPI app for the transaction.
+                    </div>
+                    <p class="text-muted fw-500 mb-4 px-2" id="success-body-text">Your health journey continues with us. Our team is already preparing your order.</p>
                     
                     <div style="background: #f8faf7; border: 1px dashed #d1dbca; border-radius: 12px; padding: 15px; margin-bottom: 30px;">
                         <span class="text-uppercase small fw-bold opacity-50 d-block mb-1">Reference Number</span>
@@ -1367,7 +1387,7 @@
                         <a id="btn-wa-receipt" target="_blank" class="btn btn-lg py-3 fw-bold shadow-sm" 
                                 style="background: #25d366; color: white; border-radius: 15px; border: none; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px;">
                             <i class="bi bi-whatsapp" style="font-size: 1.4rem;"></i>
-                            Send Receipt to WhatsApp
+                            <span id="wa-btn-text">Send Receipt on WhatsApp</span>
                         </a>
                         
                         <button type="button" class="btn btn-lg py-3 fw-bold shadow-sm" 
@@ -1380,6 +1400,7 @@
             </div>
         </div>
     </div>
+
 
     <!-- ══════ FOOTER ══════ -->
     <section data-bs-version="5.1" class="footer4 cid-uqUIPDiNEY" once="footers" id="footer-4-uqUIPDiNEY">
@@ -1399,11 +1420,10 @@
     <script src="assets/web/assets/jquery/jquery.mind3c6.js"></script>
     <script src="assets/bootstrap/js/bootstrap.bundle.mind3c6.js"></script>
     <script src="assets/dropdown/js/navbar-dropdownd3c6.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="assets/js/order-logic.js?v=1.5"></script>
-    <script src="assets/js/cart-logic.js?v=1.5"></script>
-    <script src="assets/js/order-ui.js?v=1.5"></script>
+     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="assets/js/order-logic.js?v=2.0"></script>
+    <script src="assets/js/cart-logic.js?v=2.0"></script>
+    <script src="assets/js/order-ui.js?v=2.0"></script>
 
     <!-- Floating Mobile Cart Bar -->
     <div id="mobile-cart-bar" onclick="scrollToCart()" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:1040; background: linear-gradient(135deg, #6b8c00, #8aaf00); color:#fff; padding: 12px 20px; cursor:pointer; box-shadow: 0 -4px 20px rgba(0,0,0,0.25); border-radius: 16px 16px 0 0;">

@@ -7,7 +7,7 @@
  *  - IP locked after 3 consecutive failed attempts
  */
 
-import log from './logger.js';
+import log from './lib/logger.js';
 
 // ─── IP Lockout ───────────────────────────────────────────────────────────────
 const failMap = new Map();

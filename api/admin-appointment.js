@@ -1,9 +1,9 @@
 /**
  * api/admin-appointment.js — Add a manual WhatsApp/Call order directly to Google Sheets
  */
-import log from './logger.js';
-import { writeOrder } from './sheets.js';
-import { createOrderCalendarEvents } from './calendar.js';
+import log from './lib/logger.js';
+import { writeOrder } from './lib/sheets.js';
+import { createOrderCalendarEvents } from './lib/calendar.js';
 
 async function verifyJWT(token, secret) {
     try {

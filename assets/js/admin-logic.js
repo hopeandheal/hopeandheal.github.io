@@ -12,7 +12,6 @@
 const API_BASE = window.location.hostname === 'localhost' ? `${window.location.protocol}//${window.location.host}` : '';
 
 document.addEventListener('DOMContentLoaded', () => {
-    initDashboard();
 
     // Image Preview Sync
     document.getElementById('p-image')?.addEventListener('input', (e) => updateImagePreview(e.target.value));

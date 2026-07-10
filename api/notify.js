@@ -11,9 +11,9 @@
  * 7. Google Calendar appointment creation
  */
 
-import log from './logger.js';
-import { writeOrder, writeLog } from './sheets.js';
-import { createOrderCalendarEvents } from './calendar.js';
+import log from './lib/logger.js';
+import { writeOrder, writeLog } from './lib/sheets.js';
+import { createOrderCalendarEvents } from './lib/calendar.js';
 
 const MAX_BODY_BYTES = 16 * 1024;
 const MAX_ITEMS = 30; // Clinic visits/treatments
@@ -63,12 +63,10 @@ function validatePayload(body) {
 
     if (!paymentId || typeof paymentId !== 'string' || paymentId.length > 100) return 'Invalid session ID';
     
-    // Server-side total verification
+    // Server-side total verification (no service fee)
     const subtotal = items.reduce((s, i) => s + (i.price * i.qty), 0);
     const dc = typeof deliveryCost === 'number' ? deliveryCost : 0;
-    const isOnline = paymentMethod === 'online';
-    const fee = isOnline ? Math.round((subtotal + dc) * 0.02 * 100) / 100 : 0;
-    const serverTotal = subtotal + dc + fee;
+    const serverTotal = subtotal + dc;
     
     if (Math.abs(serverTotal - Number(total)) > 0.1) return 'Security alert: Total mismatch';
 
@@ -196,7 +194,10 @@ export default async function handler(req, res) {
                 total: `\u20B9${Number(total).toFixed(2)}`,
                 payment_id: paymentId
             }, 'owner');
-        } catch (e) { log.error('email_owner_failed', { e: e.message }); }
+        } catch (e) { 
+            log.error('email_owner_failed', { e: e.message });
+            try { await writeLog('ERROR', 'email_owner_failed', { error: e.message, paymentId }); } catch (swallow) {}
+        }
     }
 
     if (customerTemplate && customer.email) {
@@ -208,8 +209,11 @@ export default async function handler(req, res) {
                 total_amount: `\u20B9${Number(total).toFixed(2)}`,
                 ref_id: paymentId
             }, 'customer');
-        } catch (e) { log.error('email_customer_failed', { e: e.message }); }
+        } catch (e) { 
+            log.error('email_customer_failed', { e: e.message });
+            try { await writeLog('ERROR', 'email_customer_failed', { error: e.message, paymentId }); } catch (swallow) {}
+        }
     }
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, ref: paymentId });
 }
