@@ -1317,49 +1317,6 @@
         </div><!-- end sidebar -->
     </div><!-- end shop-layout -->
 
-    <!-- ══════ UPI PAYMENT MODAL ══════ -->
-    <div id="upi-payment-overlay" style="display:none;" class="upi-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="upi-modal-heading">
-        <div class="upi-modal-card">
-            <div class="upi-modal-header">
-                <div class="upi-modal-icon">📱</div>
-                <h2 class="upi-modal-title" id="upi-modal-heading">Complete UPI Payment</h2>
-                <p class="upi-modal-subtitle">Pay the exact amount below to confirm your order</p>
-            </div>
-            <div class="upi-modal-body">
-                <div class="upi-amount-box">
-                    <div class="upi-amount-label">Amount to Pay</div>
-                    <div class="upi-amount-value" id="upi-amount-display">₹0.00</div>
-                </div>
-
-                <div class="upi-apps-label">Open your UPI app to pay instantly</div>
-                <div class="upi-apps-row">
-                    <a id="upi-gpay-link" href="#" class="upi-app-btn" target="_blank" rel="noopener">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/512px-Google_Pay_Logo.svg.png" alt="Google Pay">
-                        <span>GPay</span>
-                    </a>
-                    <a id="upi-phonepe-link" href="#" class="upi-app-btn" target="_blank" rel="noopener">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/PhonePe_Logo.png/800px-PhonePe_Logo.png" alt="PhonePe">
-                        <span>PhonePe</span>
-                    </a>
-                    <a id="upi-paytm-link" href="#" class="upi-app-btn" target="_blank" rel="noopener">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Paytm_Logo_%28standalone%29.svg/2560px-Paytm_Logo_%28standalone%29.svg.png" alt="Paytm">
-                        <span>Paytm</span>
-                    </a>
-                </div>
-
-                <div class="upi-divider">or copy UPI ID manually</div>
-
-                <div class="upi-id-box">
-                    <span class="upi-id-text" id="upi-id-display">8469022764@paytm</span>
-                    <button class="upi-copy-btn" id="upi-copy-btn">Copy</button>
-                </div>
-
-                <button class="btn-upi-paid" id="btn-upi-paid">✅ I've Paid — Confirm Order</button>
-                <button class="btn-upi-cancel" id="btn-upi-cancel">← Go Back &amp; Edit</button>
-                <p class="upi-note">After paying, tap "I've Paid" to confirm your order.<br>Our team will verify &amp; process your order within 2 hours.</p>
-            </div>
-        </div>
-    </div>
 
     <!-- ══════ SUCCESS MODAL ══════ -->
     <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
@@ -1421,9 +1378,11 @@
     <script src="assets/bootstrap/js/bootstrap.bundle.mind3c6.js"></script>
     <script src="assets/dropdown/js/navbar-dropdownd3c6.js"></script>
      <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="assets/js/order-logic.js?v=2.0"></script>
     <script src="assets/js/cart-logic.js?v=2.0"></script>
-    <script src="assets/js/order-ui.js?v=2.0"></script>
+    <script src="assets/js/order-ui.js?v=2.1"></script>
 
     <!-- Floating Mobile Cart Bar -->
     <div id="mobile-cart-bar" onclick="scrollToCart()" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:1040; background: linear-gradient(135deg, #6b8c00, #8aaf00); color:#fff; padding: 12px 20px; cursor:pointer; box-shadow: 0 -4px 20px rgba(0,0,0,0.25); border-radius: 16px 16px 0 0;">

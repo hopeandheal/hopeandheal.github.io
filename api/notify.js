@@ -11,9 +11,24 @@
  * 7. Google Calendar appointment creation
  */
 
+import crypto from 'crypto';
 import log from './lib/logger.js';
 import { writeOrder, writeLog } from './lib/sheets.js';
 import { createOrderCalendarEvents } from './lib/calendar.js';
+
+function verifyRazorpaySignature(orderId, paymentId, signature) {
+    const isDev = process.env.NODE_ENV === 'development' || !process.env.VERCEL_ENV;
+    if (isDev && signature === 'mock-signature') {
+        return true;
+    }
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    if (!secret) return false;
+    const generated = crypto
+        .createHmac('sha256', secret)
+        .update(orderId + '|' + paymentId)
+        .digest('hex');
+    return generated === signature;
+}
 
 const MAX_BODY_BYTES = 16 * 1024;
 const MAX_ITEMS = 30; // Clinic visits/treatments
@@ -39,10 +54,24 @@ function sanitise(str, maxLen = 200) {
 }
 
 function validatePayload(body) {
-    const { customer, items, paymentId, total, deliveryCost, ...extra } = body;
+    const { 
+        customer, 
+        items, 
+        paymentId, 
+        total, 
+        deliveryCost, 
+        razorpay_order_id, 
+        razorpay_payment_id, 
+        razorpay_signature, 
+        ...extra 
+    } = body;
     
     // Anti-Mass-Assignment
     if (Object.keys(extra).length > 0) return `Unknown fields: ${Object.keys(extra).join(', ')}`;
+
+    if (razorpay_order_id && typeof razorpay_order_id !== 'string') return 'Invalid Razorpay Order ID';
+    if (razorpay_payment_id && typeof razorpay_payment_id !== 'string') return 'Invalid Razorpay Payment ID';
+    if (razorpay_signature && typeof razorpay_signature !== 'string') return 'Invalid Razorpay Signature';
 
     if (!customer || typeof customer !== 'object') return 'Missing patient data';
     const { name, email, phone, type, address, paymentMethod, ...custExtra } = customer;
@@ -165,19 +194,41 @@ export default async function handler(req, res) {
         return res.status(400).json({ error });
     }
 
-    const { customer, items, paymentId, total, deliveryCost } = req.body;
-    log.info('appointment_received', { customer: customer.name, paymentId });
+    const { 
+        customer, 
+        items, 
+        paymentId, 
+        total, 
+        deliveryCost,
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature 
+    } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        log.warn('submission_rejected_missing_payment', { ip, paymentId });
+        return res.status(400).json({ error: 'Missing payment confirmation parameters' });
+    }
+
+    const isSignatureValid = verifyRazorpaySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+    if (!isSignatureValid) {
+        log.error('security_alert_signature_mismatch', { ip, paymentId, razorpay_order_id });
+        return res.status(400).json({ error: 'Security Alert: Invalid payment signature' });
+    }
+
+    const finalPaymentId = `${paymentId} (${razorpay_payment_id})`;
+    log.info('appointment_received', { customer: customer.name, paymentId: finalPaymentId });
 
     const breakdown = buildDayBreakdown(items);
 
     // ── 1. Telegram
-    try { await sendTelegram(customer, items, paymentId, total); } catch (e) { log.error('telegram_failed', { e: e.message }); }
+    try { await sendTelegram(customer, items, finalPaymentId, total); } catch (e) { log.error('telegram_failed', { e: e.message }); }
 
     // ── 2. Sheets
-    try { await writeOrder(customer, items, paymentId, deliveryCost || 0, total); } catch (e) { log.error('sheets_failed', { e: e.message }); }
+    try { await writeOrder(customer, items, finalPaymentId, deliveryCost || 0, total); } catch (e) { log.error('sheets_failed', { e: e.message }); }
 
     // ── 3. Calendar
-    try { await createOrderCalendarEvents(customer, items, paymentId, deliveryCost || 0); } catch (e) { log.error('calendar_failed', { e: e.message }); }
+    try { await createOrderCalendarEvents(customer, items, finalPaymentId, deliveryCost || 0); } catch (e) { log.error('calendar_failed', { e: e.message }); }
 
     // ── 4. Emails (Server-Side)
     const ownerTemplate = process.env.EMAILJS_TEMPLATE_OWNER;
@@ -192,11 +243,11 @@ export default async function handler(req, res) {
                 order_type: customer.type === 'delivery' ? 'Home Delivery' : 'Clinic Pickup',
                 treatments_breakdown: breakdown,
                 total: `\u20B9${Number(total).toFixed(2)}`,
-                payment_id: paymentId
+                payment_id: finalPaymentId
             }, 'owner');
         } catch (e) { 
             log.error('email_owner_failed', { e: e.message });
-            try { await writeLog('ERROR', 'email_owner_failed', { error: e.message, paymentId }); } catch (swallow) {}
+            try { await writeLog('ERROR', 'email_owner_failed', { error: e.message, paymentId: finalPaymentId }); } catch (swallow) {}
         }
     }
 
@@ -207,13 +258,13 @@ export default async function handler(req, res) {
                 to_email: sanitise(customer.email),
                 day_breakdown: breakdown,
                 total_amount: `\u20B9${Number(total).toFixed(2)}`,
-                ref_id: paymentId
+                ref_id: finalPaymentId
             }, 'customer');
         } catch (e) { 
             log.error('email_customer_failed', { e: e.message });
-            try { await writeLog('ERROR', 'email_customer_failed', { error: e.message, paymentId }); } catch (swallow) {}
+            try { await writeLog('ERROR', 'email_customer_failed', { error: e.message, paymentId: finalPaymentId }); } catch (swallow) {}
         }
     }
 
-    return res.status(200).json({ success: true, ref: paymentId });
+    return res.status(200).json({ success: true, ref: finalPaymentId });
 }

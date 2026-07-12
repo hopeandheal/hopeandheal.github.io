@@ -145,91 +145,114 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3002' : '';
             
-            // Show UPI Payment Modal
-            const upiOverlay = document.getElementById('upi-payment-overlay');
-            const upiAmountDisplay = document.getElementById('upi-amount-display');
-            const btnUpiPaid = document.getElementById('btn-upi-paid');
-            const btnUpiCancel = document.getElementById('btn-upi-cancel');
-            const upiCopyBtn = document.getElementById('upi-copy-btn');
+            // Create Razorpay order on the server
+            const orderRes = await fetch(`${API_BASE}/api/create-razorpay-order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    items: cart.map(i => ({ price: i.price, qty: i.quantity || 1 })),
+                    deliveryCost: deliveryFee
+                })
+            });
 
-            if (upiOverlay && upiAmountDisplay) {
-                upiAmountDisplay.innerText = `₹${total.toFixed(2)}`;
-                
-                // Generate deep links
-                const upiId = "8469022764@paytm";
-                const upiName = encodeURIComponent("Hope & Heal Clinic");
-                const upiNote = encodeURIComponent(`Order ${paymentId}`);
-                
-                // Standard universal UPI scheme
-                const universalLink = `upi://pay?pa=${upiId}&pn=${upiName}&am=${total.toFixed(2)}&cu=INR&tn=${upiNote}`;
-                
-                document.getElementById('upi-gpay-link').href = universalLink;
-                document.getElementById('upi-phonepe-link').href = universalLink;
-                document.getElementById('upi-paytm-link').href = universalLink;
+            if (!orderRes.ok) {
+                const errData = await orderRes.json().catch(() => ({}));
+                throw new Error(errData.error || 'Failed to initialize payment gateway.');
+            }
 
-                // Setup copy functionality
-                upiCopyBtn.onclick = () => {
-                    navigator.clipboard.writeText(upiId).then(() => {
-                        upiCopyBtn.innerText = "Copied!";
-                        setTimeout(() => {
-                            upiCopyBtn.innerText = "Copy";
-                        }, 2000);
-                    }).catch(err => {
-                        console.error('Failed to copy text: ', err);
-                    });
-                };
+            const orderData = await orderRes.json();
 
-                // Setup button event listeners
-                const handlePaidClick = async () => {
-                    btnUpiPaid.disabled = true;
-                    btnUpiPaid.innerHTML = '<span class="loader-dots">Confirming…</span>';
-                    try {
-                        // Send notification / save order
-                        await sendNotifications(payload, cart, total, API_BASE);
-                        
-                        // Hide UPI modal
-                        upiOverlay.style.display = 'none';
-                        
-                        // Show success modal with pending note
-                        const successUpiNote = document.getElementById('success-upi-note');
-                        if (successUpiNote) {
-                            successUpiNote.style.display = 'block';
-                        }
-                    } catch (err) {
-                        console.error('Failed to place order:', err);
-                        alert(err.message || 'Connection failed. Please try again.');
-                        btnUpiPaid.disabled = false;
-                        btnUpiPaid.innerHTML = '✅ I\'ve Paid — Confirm Order';
-                    } finally {
-                        btnUpiPaid.removeEventListener('click', handlePaidClick);
-                        btnUpiCancel.removeEventListener('click', handleCancelClick);
-                    }
-                };
-
-                const handleCancelClick = () => {
-                    // Hide UPI modal
-                    upiOverlay.style.display = 'none';
+            // Local development server simulation modal
+            if (orderData.orderId.startsWith('order_mock_')) {
+                const confirmPaid = confirm(`[DEV MODE] Simulate Razorpay payment for ₹${total.toFixed(2)}?\n\nClick OK for Success, Cancel for Failure.`);
+                if (confirmPaid) {
+                    const mockPaymentId = 'pay_mock_' + Math.random().toString(36).substring(2, 10).toUpperCase();
+                    const mockSignature = 'mock-signature';
                     
-                    // Re-enable form submit button
+                    const mockPayload = {
+                        ...payload,
+                        razorpay_order_id: orderData.orderId,
+                        razorpay_payment_id: mockPaymentId,
+                        razorpay_signature: mockSignature
+                    };
+
+                    await sendNotifications(mockPayload, cart, total, API_BASE);
+                } else {
+                    alert('Payment cancelled by user.');
                     if (submitBtn) {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = `Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
                     }
-                    
-                    // Clean up listeners
-                    btnUpiPaid.removeEventListener('click', handlePaidClick);
-                    btnUpiCancel.removeEventListener('click', handleCancelClick);
-                };
-
-                btnUpiPaid.addEventListener('click', handlePaidClick);
-                btnUpiCancel.addEventListener('click', handleCancelClick);
-
-                // Open the overlay
-                upiOverlay.style.display = 'flex';
-            } else {
-                // Fallback if modal elements aren't present
-                await sendNotifications(payload, cart, total, API_BASE);
+                }
+                return;
             }
+
+            // Production real Razorpay checkout flow
+            if (!window.Razorpay) {
+                throw new Error('Payment gateway failed to load. Please refresh the page and try again.');
+            }
+
+            const options = {
+                "key": orderData.keyId,
+                "amount": orderData.amount,
+                "currency": "INR",
+                "name": "Hope & Heal Clinic",
+                "description": "Herbal Products Order",
+                "image": "assets/images/favicon.png",
+                "order_id": orderData.orderId,
+                "handler": async function (response) {
+                    const finalPayload = {
+                        ...payload,
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature
+                    };
+                    
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="loader-dots">Confirming…</span>';
+                    }
+
+                    await sendNotifications(finalPayload, cart, total, API_BASE);
+                },
+                "prefill": {
+                    "name": name,
+                    "email": email,
+                    "contact": phone
+                },
+                "config": {
+                    "display": {
+                        "blocks": {
+                            "upi": {
+                                "name": "UPI / Google Pay / PhonePe / Paytm",
+                                "instruments": [
+                                    {
+                                        "method": "upi"
+                                    }
+                                ]
+                            }
+                        },
+                        "sequence": ["block.upi"],
+                        "preferences": {
+                            "show_default_blocks": false
+                        }
+                    }
+                },
+                "theme": {
+                    "color": "#7c9a3d"
+                },
+                "modal": {
+                    "ondismiss": function() {
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = `Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
+                        }
+                    }
+                }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
 
         } catch (err) {
             console.error('Order failed:', err);

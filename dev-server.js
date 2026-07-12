@@ -149,6 +149,25 @@ const MOCK_HANDLERS = {
         return { status: 200, body: { success: true, ref: body.paymentId } };
     },
 
+    '/api/create-razorpay-order': async (body, _q, method) => {
+        if (method !== 'POST') return { status: 405, body: { error: 'Method not allowed' } };
+        console.log('\n💳 [DEV] /api/create-razorpay-order called');
+        const { items, deliveryCost } = body;
+        const subtotal = (items || []).reduce((sum, item) => sum + (Number(item.price) * Number(item.qty || 1)), 0);
+        const total = subtotal + (Number(deliveryCost) || 0);
+        const orderId = 'order_mock_' + Math.random().toString(36).substring(2, 10).toUpperCase();
+        console.log(`   ✅ Mock Razorpay Order created: ${orderId} for amount: ₹${total.toFixed(2)}`);
+        return {
+            status: 200,
+            body: {
+                success: true,
+                orderId: orderId,
+                amount: Math.round(total * 100),
+                keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_mockkey'
+            }
+        };
+    },
+
     '/api/admin-auth': (body) => {
         const expected = process.env.ADMIN_PWD || 'dev-admin';
         console.log('\n🔐 [DEV] /api/admin-auth called');
