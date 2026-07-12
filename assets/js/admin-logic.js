@@ -383,8 +383,9 @@ function renderOrderTables(orders) {
             }
         } catch(e) {}
 
-        // WhatsApp & Contact
-        const phone = o.Phone || o.phone || '';
+        // WhatsApp & Contact — guard against legacy #ERROR! values (old '+91' formula-parse bug)
+        const rawPhone = o.Phone || o.phone || '';
+        const phone = rawPhone.startsWith('#') ? '' : rawPhone;  // Treat Sheets error values as empty
         const email = o.Email || o.email || '';
         const cleanPhone = phone.replace(/\D/g, '');
         const waIcon = cleanPhone ? `<a href="https://wa.me/${cleanPhone}" target="_blank" class="text-success me-1" style="text-decoration:none;"><i class="bi bi-whatsapp"></i></a>` : '';

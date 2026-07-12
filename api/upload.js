@@ -87,13 +87,13 @@ export default async function handler(req, res) {
                     },
                 });
 
-                // Return direct link format for images
-                const directLink = `https://lh3.googleusercontent.com/u/0/d/${fileId}`;
-                // Alternatively: `https://drive.google.com/uc?id=${fileId}` (though Google sometimes blocks this for direct embedding)
+                // Use Google Drive thumbnail API — reliably embeddable in <img> tags
+                // drive.google.com/uc?id= is frequently blocked by Google for hotlinking
+                const thumbnailUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w600`;
 
                 res.status(200).json({
                     success: true,
-                    url: `https://drive.google.com/uc?id=${fileId}`,
+                    url: thumbnailUrl,
                     fileId: fileId
                 });
                 resolve();

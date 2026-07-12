@@ -95,38 +95,50 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script type="text/javascript">
     (function () {
-      emailjs.init("_V9iJ5oAu9BDUAd2K"); // Your EmailJS public key
+      emailjs.init("_V9iJ5oAu9BDUAd2K");
     })();
 
-    function sendEmail() {
-      // Validate required fields
-      var name = document.getElementById("name").value;
-      var email = document.getElementById("email").value;
-      var phone = document.getElementById("phone").value;
-      var message = document.getElementById("message").value;
+    function showFormMsg(type, msg) {
+      var successEl = document.querySelector('[data-form-alert]');
+      var dangerEl  = document.querySelector('[data-form-alert-danger]');
+      if (!successEl || !dangerEl) return;
+      successEl.removeAttribute('hidden'); dangerEl.removeAttribute('hidden');
+      if (type === 'success') {
+        successEl.textContent = msg;
+        successEl.style.display = 'block';
+        dangerEl.style.display  = 'none';
+      } else {
+        dangerEl.textContent = msg;
+        dangerEl.style.display  = 'block';
+        successEl.style.display = 'none';
+      }
+    }
 
-      if (!name || !email || !phone || !message) {
-        alert("Please fill in all required fields.");
-        return; // Stop the function if validation fails
+    function sendEmail() {
+      var name    = document.getElementById("name").value.trim();
+      var phone   = document.getElementById("phone").value.trim();
+      var email   = document.getElementById("email").value.trim();   // optional
+      var message = document.getElementById("message").value.trim();
+
+      if (!name || !phone || !message) {
+        showFormMsg('error', 'Please fill in your name, phone number, and message.');
+        return;
       }
 
-      var templateParams = {
-        name: name,
-        email: email,
-        phone: phone,
-        message: message,
-      };
+      var btn = document.querySelector('#contact-form button');
+      if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
 
-      emailjs.send("service_s8e7c5z", "template_kxn0wnj", templateParams) // Your EmailJS service and template IDs
-        .then(function (response) {
-          console.log("SUCCESS!", response.status, response.text);
-          // Display success message
-          alert("Email sent successfully!");
-          // Clear the form fields
+      var templateParams = { name: name, email: email || 'Not provided', phone: phone, message: message };
+
+      emailjs.send("service_s8e7c5z", "template_kxn0wnj", templateParams)
+        .then(function () {
+          showFormMsg('success', '✅ Message sent! We'll get back to you shortly.');
           document.getElementById("contact-form").reset();
+          if (btn) { btn.disabled = false; btn.textContent = 'Submit Request'; }
         }, function (error) {
-          console.log("FAILED...", error);
-          alert("Failed to send email. Please try again later.");
+          console.error("EmailJS error:", error);
+          showFormMsg('error', '❌ Failed to send. Please WhatsApp us at +91 84690 22764.');
+          if (btn) { btn.disabled = false; btn.textContent = 'Submit Request'; }
         });
     }
   </script>

@@ -88,7 +88,7 @@ export async function writeOrder(customer, items, paymentId, deliveryCost, total
             isManual ? 'MANUAL' : 'ONLINE'
         ]];
 
-        await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Orders!A:A:append?valueInputOption=USER_ENTERED`, {
+        await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Orders!A:A:append?valueInputOption=RAW`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ values })
