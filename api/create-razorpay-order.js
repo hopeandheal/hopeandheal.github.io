@@ -45,14 +45,11 @@ export default async function handler(req, res) {
         const amountInPaise = Math.round(totalAmount * 100);
 
         const options = {
-            amount: amountInPaose || amountInPaise,
+            amount: amountInPaise,
             currency: 'INR',
             receipt: `rcpt_${Date.now().toString(36).toUpperCase()}`,
             payment_capture: 1 // Auto capture payment
         };
-
-        // Fix typo
-        options.amount = amountInPaise;
 
         const order = await razorpay.orders.create(options);
         
