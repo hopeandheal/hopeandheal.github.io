@@ -61,6 +61,7 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
+        console.error('Razorpay Error Details:', error);
         log.error('razorpay_order_creation_failed', { error: error.message });
         return res.status(500).json({ error: 'Failed to create payment gateway order' });
     }
