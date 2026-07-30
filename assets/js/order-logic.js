@@ -55,6 +55,19 @@ async function loadTreatments() {
                 image: p.ImageURL || null
             }));
             window.TREATMENTS = TREATMENTS;
+
+            // Sync any existing cart items with updated prices from catalog
+            if (typeof window.getCart === 'function') {
+                const currentCart = window.getCart();
+                if (Array.isArray(currentCart)) {
+                    currentCart.forEach(cartItem => {
+                        const matched = TREATMENTS.find(t => t.id === cartItem.id);
+                        if (matched) cartItem.price = matched.price;
+                    });
+                    if (typeof window.saveCart === 'function') window.saveCart();
+                    if (typeof window.updateUI === 'function') window.updateUI();
+                }
+            }
         }
     } catch (e) {
         console.info('[HopeHeal] Using static product catalogue.');
