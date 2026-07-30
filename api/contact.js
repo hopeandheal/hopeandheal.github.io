@@ -62,9 +62,10 @@ export default async function handler(req, res) {
 
     if (!cleanName || cleanEmail.length < 5 || !cleanMsg) return res.status(400).json({ error: 'Validation failed' });
 
-    const SERVICE = process.env.EMAILJS_SERVICE_ID;
+    const SERVICE  = process.env.EMAILJS_SERVICE_ID;
     const TEMPLATE = process.env.EMAILJS_TEMPLATE_OWNER;
-    const PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY;
+    const PUBLIC_KEY  = process.env.EMAILJS_PUBLIC_KEY;
+    const PRIVATE_KEY = process.env.EMAILJS_PRIVATE_KEY;
 
     if (!SERVICE || !TEMPLATE || !PUBLIC_KEY) {
         log.error('contact_env_missing');
@@ -76,10 +77,24 @@ export default async function handler(req, res) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                service_id: SERVICE, template_id: TEMPLATE, user_id: PUBLIC_KEY,
+                service_id: SERVICE,
+                template_id: TEMPLATE,
+                user_id: PUBLIC_KEY,
+                accessToken: PRIVATE_KEY,
                 template_params: {
-                    name: cleanName, email: cleanEmail, phone: cleanPhone,
-                    message: cleanMsg, subject: `New Inquiry: ${cleanName}`
+                    // Generic contact fields — compatible with both contact and owner templates
+                    patient_name:         cleanName,
+                    from_name:            cleanName,
+                    from_email:           cleanEmail,
+                    from_phone:           cleanPhone,
+                    message:              cleanMsg,
+                    subject:              `New Website Inquiry from ${cleanName}`,
+                    // Filler values so owner template doesn't break if reused
+                    order_type:           'Website Inquiry',
+                    address:              cleanPhone || 'N/A',
+                    treatments_breakdown: cleanMsg,
+                    total:                'N/A',
+                    payment_id:           'CONTACT-FORM'
                 }
             })
         });
