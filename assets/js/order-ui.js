@@ -27,8 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function getDeliveryFee() {
         const isPickup = document.getElementById('typePickup')?.checked;
         if (isPickup) return 0;
-        const state = stateSelect ? stateSelect.value : 'Other';
-        return state === 'Gujarat' ? 50 : 100;
+        return 1;
     }
 
     function refreshTotals() {

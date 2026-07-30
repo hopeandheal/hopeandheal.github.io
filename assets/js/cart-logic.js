@@ -106,7 +106,7 @@ function updateUI() {
     // ── Totals ─────────────────────────────────────────────────────────────────
     const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
     const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
-    const deliveryFee = typeof window.deliveryFee === 'number' ? window.deliveryFee : 50;
+    const deliveryFee = typeof window.deliveryFee === 'number' ? window.deliveryFee : 1;
 
     const finalTotal = subtotal + deliveryFee;
 
