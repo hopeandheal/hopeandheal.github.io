@@ -219,24 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     "email": email,
                     "contact": phone
                 },
-                "config": {
-                    "display": {
-                        "blocks": {
-                            "upi": {
-                                "name": "UPI / Google Pay / PhonePe / Paytm",
-                                "instruments": [
-                                    {
-                                        "method": "upi"
-                                    }
-                                ]
-                            }
-                        },
-                        "sequence": ["block.upi"],
-                        "preferences": {
-                            "show_default_blocks": false
-                        }
-                    }
-                },
                 "theme": {
                     "color": "#7c9a3d"
                 },
