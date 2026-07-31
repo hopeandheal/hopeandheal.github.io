@@ -217,7 +217,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "prefill": {
                     "name": name,
                     "email": email,
-                    "contact": phone
+                    "contact": phone.replace(/\D/g, '').slice(-10)
+                },
+                "readonly": {
+                    "contact": true,
+                    "email": true
+                },
+                "notes": {
+                    "full_phone": `${code} ${phone}`
                 },
                 "theme": {
                     "color": "#7c9a3d"
