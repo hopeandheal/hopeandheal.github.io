@@ -30,6 +30,12 @@ async function verifyJWT(token, secret) {
     } catch { return null; }
 }
 
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};
+
 export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -44,67 +50,47 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Invalid session' });
     }
 
-    // 2. Setup Google Drive
-    let auth;
-    try {
-        const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
-        auth = new google.auth.GoogleAuth({
-            credentials,
-            scopes: ['https://www.googleapis.com/auth/drive.file'],
-        });
-    } catch (e) {
-        return res.status(500).json({ error: 'Google configuration missing' });
-    }
-
-    const drive = google.drive({ version: 'v3', auth });
     const busboy = Busboy({ headers: req.headers });
 
     return new Promise((resolve) => {
         busboy.on('file', (fieldname, file, info) => {
-            const { filename, mimeType } = info;
-
-            // Upload to Drive
-            drive.files.create({
-                requestBody: {
-                    name: `product_${Date.now()}_${filename}`,
-                    mimeType: mimeType,
-                    parents: process.env.GOOGLE_DRIVE_FOLDER_ID ? [process.env.GOOGLE_DRIVE_FOLDER_ID] : []
-                },
-                media: {
-                    mimeType: mimeType,
-                    body: file,
-                },
-                fields: 'id, webContentLink, webViewLink'
-            }).then(async (driveRes) => {
-                const fileId = driveRes.data.id;
-
-                // Make Public
-                await drive.permissions.create({
-                    fileId: fileId,
-                    requestBody: {
-                        role: 'reader',
-                        type: 'anyone',
-                    },
-                });
-
-                // Use Google Drive thumbnail API — reliably embeddable in <img> tags
-                // drive.google.com/uc?id= is frequently blocked by Google for hotlinking
-                const thumbnailUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w600`;
-
-                res.status(200).json({
-                    success: true,
-                    url: thumbnailUrl,
-                    fileId: fileId
-                });
-                resolve();
-            }).catch(err => {
-                console.error('Drive Upload Error:', err);
-                res.status(500).json({ error: 'Drive upload failed' });
+            const chunks = [];
+            file.on('data', (data) => chunks.push(data));
+            file.on('end', async () => {
+                const buffer = Buffer.concat(chunks);
+                const base64Image = buffer.toString('base64');
+                
+                try {
+                    const formData = new URLSearchParams();
+                    formData.append('image', base64Image);
+                    
+                    const response = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        res.status(200).json({
+                            success: true,
+                            url: data.data.url
+                        });
+                    } else {
+                        res.status(500).json({ error: 'ImgBB upload failed', details: data.error?.message });
+                    }
+                } catch (err) {
+                    console.error('ImgBB Upload Error:', err);
+                    res.status(500).json({ error: 'Upload failed', details: err.message });
+                }
                 resolve();
             });
         });
 
         busboy.on('error', (err) => {
+            console.error('Busboy error:', err);
             res.status(500).json({ error: 'Form parsing error' });
             resolve();
         });

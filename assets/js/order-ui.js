@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function getDeliveryFee() {
         const isPickup = document.getElementById('typePickup')?.checked;
         if (isPickup) return 0;
-        return 1;
+        return 50;
     }
 
     function refreshTotals() {
@@ -207,6 +207,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         razorpay_signature: response.razorpay_signature
                     };
                     
+                    // Show full-page verifying overlay
+                    const overlay = document.createElement('div');
+                    overlay.id = 'payment-verification-overlay';
+                    overlay.innerHTML = `
+                        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.95);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;">
+                            <div class="spinner-border" style="color: #7c9a3d; width: 4rem; height: 4rem;" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <h3 style="margin-top: 20px; color: #2d3748; font-weight: 600;">Payment Successful!</h3>
+                            <p style="color: #4a5568; font-size: 16px; margin-top: 10px;">Verifying order details, please don't refresh...</p>
+                        </div>
+                    `;
+                    document.body.appendChild(overlay);
+
                     if (submitBtn) {
                         submitBtn.disabled = true;
                         submitBtn.innerHTML = '<span class="loader-dots">Confirming…</span>';
@@ -284,6 +298,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('Order placed successfully!');
                 const modal = new bootstrap.Modal(document.getElementById('successModal'));
                 modal.show();
+
+                // Beautiful Confetti Animation
+                if (typeof confetti === 'function') {
+                    const duration = 2500;
+                    const end = Date.now() + duration;
+                    (function frame() {
+                        confetti({
+                            particleCount: 4,
+                            angle: 60,
+                            spread: 55,
+                            origin: { x: 0 },
+                            colors: ['#a5be00', '#7c8e00', '#ffffff', '#25d366']
+                        });
+                        confetti({
+                            particleCount: 4,
+                            angle: 120,
+                            spread: 55,
+                            origin: { x: 1 },
+                            colors: ['#a5be00', '#7c8e00', '#ffffff', '#25d366']
+                        });
+                        if (Date.now() < end) requestAnimationFrame(frame);
+                    }());
+                }
             } else {
                 const errData = await res.json().catch(() => ({}));
                 alert(errData.error || 'Something went wrong. Please call/WhatsApp 84690 22764.');
@@ -292,6 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Notification failed:', err);
             alert('Something went wrong. Please call/WhatsApp 84690 22764 to confirm your order.');
         } finally {
+            const overlay = document.getElementById('payment-verification-overlay');
+            if (overlay) overlay.remove();
+            
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = `🛒 Place Order — <span id="btn-total">₹${total.toFixed(2)}</span>`;
@@ -361,8 +401,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Clear error on input
-    document.querySelectorAll('.form-control, .form-select').forEach(el => {
-        el.addEventListener('input', () => el.classList.remove('is-invalid'));
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+        el.addEventListener('input', () => {
+            el.classList.remove('is-invalid');
+            const existing = el.parentNode.querySelector('.invalid-feedback');
+            if (existing) existing.remove();
+        });
     });
     // ── Mobile UI Helpers ─────────────────────────────────────────────────────
     window.scrollToCart = function () {

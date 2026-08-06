@@ -216,19 +216,20 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Security Alert: Invalid payment signature' });
     }
 
-    const finalPaymentId = `${paymentId} (${razorpay_payment_id})`;
-    log.info('appointment_received', { customer: customer.name, paymentId: finalPaymentId });
+    const shortPaymentId = paymentId;
+    const adminRefId = `${paymentId} (Razorpay: ${razorpay_payment_id})`;
+    log.info('appointment_received', { customer: customer.name, paymentId: adminRefId });
 
     const breakdown = buildDayBreakdown(items);
 
     // ── 1. Telegram
-    try { await sendTelegram(customer, items, finalPaymentId, total); } catch (e) { log.error('telegram_failed', { e: e.message }); }
+    try { await sendTelegram(customer, items, adminRefId, total); } catch (e) { log.error('telegram_failed', { e: e.message }); }
 
     // ── 2. Sheets
-    try { await writeOrder(customer, items, finalPaymentId, deliveryCost || 0, total); } catch (e) { log.error('sheets_failed', { e: e.message }); }
+    try { await writeOrder(customer, items, adminRefId, deliveryCost || 0, total); } catch (e) { log.error('sheets_failed', { e: e.message }); }
 
     // ── 3. Calendar
-    try { await createOrderCalendarEvents(customer, items, finalPaymentId, deliveryCost || 0); } catch (e) { log.error('calendar_failed', { e: e.message }); }
+    try { await createOrderCalendarEvents(customer, items, adminRefId, deliveryCost || 0); } catch (e) { log.error('calendar_failed', { e: e.message }); }
 
     // ── 4. Emails (Server-Side)
     const ownerTemplate = process.env.EMAILJS_TEMPLATE_OWNER;
@@ -243,11 +244,11 @@ export default async function handler(req, res) {
                 order_type: customer.type === 'delivery' ? 'Home Delivery' : 'Clinic Pickup',
                 treatments_breakdown: breakdown,
                 total: `\u20B9${Number(total).toFixed(2)}`,
-                payment_id: finalPaymentId
+                payment_id: adminRefId
             }, 'owner');
         } catch (e) { 
             log.error('email_owner_failed', { e: e.message });
-            try { await writeLog('ERROR', 'email_owner_failed', { error: e.message, paymentId: finalPaymentId }); } catch (swallow) {}
+            try { await writeLog('ERROR', 'email_owner_failed', { error: e.message, paymentId: adminRefId }); } catch (swallow) {}
         }
     }
 
@@ -258,13 +259,13 @@ export default async function handler(req, res) {
                 to_email: sanitise(customer.email),
                 day_breakdown: breakdown,
                 total_amount: `\u20B9${Number(total).toFixed(2)}`,
-                ref_id: finalPaymentId
+                ref_id: shortPaymentId
             }, 'customer');
         } catch (e) { 
             log.error('email_customer_failed', { e: e.message });
-            try { await writeLog('ERROR', 'email_customer_failed', { error: e.message, paymentId: finalPaymentId }); } catch (swallow) {}
+            try { await writeLog('ERROR', 'email_customer_failed', { error: e.message, paymentId: shortPaymentId }); } catch (swallow) {}
         }
     }
 
-    return res.status(200).json({ success: true, ref: finalPaymentId });
+    return res.status(200).json({ success: true, ref: shortPaymentId });
 }

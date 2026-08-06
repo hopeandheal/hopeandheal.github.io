@@ -15,6 +15,7 @@
         "busboy": "^1.6.0",
         "dotenv": "^17.4.2",
         "googleapis": "^171.4.0",
-        "razorpay": "^2.9.6"
+        "razorpay": "^2.9.6",
+        "sharp": "^0.35.3"
     }
 }
