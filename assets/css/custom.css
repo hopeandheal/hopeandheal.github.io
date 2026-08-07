@@ -249,7 +249,7 @@ section {
 ══════════════════════════════ */
 /* Hero stays dark/image */
 .cid-uqUIPDblTU {
-  background-color: var(--ink) !important;
+  /* background-color: var(--ink) !important; */
 }
 
 /* Metrics strip */
