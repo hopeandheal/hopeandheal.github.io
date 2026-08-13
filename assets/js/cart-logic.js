@@ -76,6 +76,15 @@ function updateUI() {
         if (svcRowEl) svcRowEl.style.display = 'none';
         if (breakdownEl) breakdownEl.style.display = 'none';
         if (checkoutBtn) checkoutBtn.disabled = true;
+
+        // ── Hide & reset floating mobile cart bar ──────────────────────────
+        const mobileBar = document.getElementById('mobile-cart-bar');
+        const mobileCount = document.getElementById('mobile-cart-count');
+        const mobileTotal = document.getElementById('mobile-cart-total');
+        if (mobileBar) mobileBar.style.display = 'none';
+        if (mobileCount) mobileCount.innerText = '0 items';
+        if (mobileTotal) mobileTotal.innerText = '₹0.00';
+
         syncCardStates();
         return;
     }
