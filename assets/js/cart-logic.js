@@ -63,28 +63,39 @@ function updateUI() {
     const checkoutBtn = document.getElementById('btn-checkout');
     const breakdownEl = document.getElementById('price-breakdown');
 
+    // ── Mobile cart bar — always update first, regardless of sidebar state ──
+    const mobileBar   = document.getElementById('mobile-cart-bar');
+    const mobileCount = document.getElementById('mobile-cart-count');
+    const mobileTotal = document.getElementById('mobile-cart-total');
+    if (mobileBar) {
+        const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
+        const subtotal   = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+        const fee        = typeof window.deliveryFee === 'number' ? window.deliveryFee : 50;
+        const finalTotal = subtotal + (totalItems > 0 ? fee : 0);
+        if (totalItems > 0 && window.innerWidth < 1024) {
+            mobileBar.style.display = 'block';
+            if (mobileCount) mobileCount.innerText = totalItems + (totalItems === 1 ? ' item' : ' items');
+            if (mobileTotal) mobileTotal.innerText = '\u20B9' + finalTotal.toFixed(2);
+        } else {
+            mobileBar.style.display = 'none';
+            if (mobileCount) mobileCount.innerText = '0 items';
+            if (mobileTotal) mobileTotal.innerText = '\u20B90.00';
+        }
+    }
+
     if (!summaryEl) return;
 
     // ── Empty cart ────────────────────────────────────────────────────────────
     if (cart.length === 0) {
         summaryEl.innerHTML = '<div class="cart-empty">Add products to get started</div>';
-        if (subtotalEl) subtotalEl.innerText = '₹0.00';
-        if (feeSpanEl) feeSpanEl.innerText = '₹0.00';
-        if (totalEl) totalEl.innerText = '₹0.00';
-        if (btnTotalEl) btnTotalEl.innerText = '₹0.00';
-        if (countEl) countEl.innerText = '0';
-        if (svcRowEl) svcRowEl.style.display = 'none';
+        if (subtotalEl) subtotalEl.innerText = '\u20B90.00';
+        if (feeSpanEl)  feeSpanEl.innerText  = '\u20B90.00';
+        if (totalEl)    totalEl.innerText     = '\u20B90.00';
+        if (btnTotalEl) btnTotalEl.innerText  = '\u20B90.00';
+        if (countEl)    countEl.innerText     = '0';
+        if (svcRowEl)   svcRowEl.style.display   = 'none';
         if (breakdownEl) breakdownEl.style.display = 'none';
         if (checkoutBtn) checkoutBtn.disabled = true;
-
-        // ── Hide & reset floating mobile cart bar ──────────────────────────
-        const mobileBar = document.getElementById('mobile-cart-bar');
-        const mobileCount = document.getElementById('mobile-cart-count');
-        const mobileTotal = document.getElementById('mobile-cart-total');
-        if (mobileBar) mobileBar.style.display = 'none';
-        if (mobileCount) mobileCount.innerText = '0 items';
-        if (mobileTotal) mobileTotal.innerText = '₹0.00';
-
         syncCardStates();
         return;
     }
@@ -128,20 +139,6 @@ function updateUI() {
     if (btnTotalEl) btnTotalEl.innerText = `₹${finalTotal.toFixed(2)}`;
     if (countEl) countEl.innerText = totalItems;
     if (checkoutBtn) checkoutBtn.disabled = false;
-
-    // ── Update floating mobile cart bar ─────────────────────────────────────────
-    const mobileBar = document.getElementById('mobile-cart-bar');
-    const mobileCount = document.getElementById('mobile-cart-count');
-    const mobileTotal = document.getElementById('mobile-cart-total');
-    if (mobileBar) {
-        if (totalItems > 0 && window.innerWidth < 1024) {
-            mobileBar.style.display = 'block';
-            if (mobileCount) mobileCount.innerText = totalItems + (totalItems === 1 ? ' item' : ' items');
-            if (mobileTotal) mobileTotal.innerText = '₹' + finalTotal.toFixed(2);
-        } else {
-            mobileBar.style.display = 'none';
-        }
-    }
 
     syncCardStates();
 }
