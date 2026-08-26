@@ -402,13 +402,35 @@ function renderOrderTables(orders) {
         const detailStr = itemParts.join(' | ') || 'General Consultation';
 
         const totalVal = o.Total || o.total || '0';
-        const orderId = (o.ID || o.id || '').slice(-6);
+        const rawOrderId = o.ID || o.id || '';
+        const orderId = rawOrderId.slice(-6);
+        const nameVal = o.Name || o.name || 'Unknown';
+
+        // Google Review Status & Controls
+        const rev7 = (o.Review_7d || o.review_7d || '').trim();
+        const rev14 = (o.Review_14d || o.review_14d || '').trim();
+        const hasEmail = email && email !== 'N/A' && email.includes('@');
+
+        let reviewControls = '';
+        if (hasEmail) {
+            const badge7 = rev7.startsWith('SENT')
+                ? `<span class="badge badge-clinic" title="1-Week sent: ${rev7}">⭐ 7d ✅</span>`
+                : `<button class="btn-refresh" style="padding:2px 6px; font-size:0.7rem;" onclick="sendReviewEmailManual('${rawOrderId}', '7d', '${email}', '${nameVal}')" title="Send 1-Week Review Email">✉️ 7d</button>`;
+
+            const badge14 = rev14.startsWith('SENT')
+                ? `<span class="badge badge-clinic" title="2-Week sent: ${rev14}">🌟 14d ✅</span>`
+                : `<button class="btn-refresh" style="padding:2px 6px; font-size:0.7rem;" onclick="sendReviewEmailManual('${rawOrderId}', '14d', '${email}', '${nameVal}')" title="Send 2-Week Follow-up Email">✉️ 14d</button>`;
+
+            reviewControls = `<div style="display:flex; gap:4px; align-items:center;">${badge7}${badge14}</div>`;
+        } else {
+            reviewControls = `<span class="small opacity-50">No Email</span>`;
+        }
 
         return {
             full: `
                 <tr>
                     <td class="small text-muted">${displayTimeFull}</td>
-                    <td class="fw-bold">${o.Name || o.name || 'Unknown'}</td>
+                    <td class="fw-bold">${nameVal}</td>
                     <td>
                         <div class="small">${waIcon}${phone}</div>
                         <div class="small opacity-50">${email}</div>
@@ -417,13 +439,14 @@ function renderOrderTables(orders) {
                     <td class="small">${o.Address || o.address || '—'}</td>
                     <td class="small opacity-75">${detailStr}</td>
                     <td class="fw-bold text-success">₹${totalVal}</td>
+                    <td>${reviewControls}</td>
                     <td class="small font-monospace opacity-50">${orderId}</td>
                 </tr>
             `,
             recent: `
                 <tr>
                     <td class="small">${displayTimeShort}</td>
-                    <td class="fw-bold">${o.Name || o.name || 'Patient'}</td>
+                    <td class="fw-bold">${nameVal}</td>
                     <td class="small">${waIcon}${phone || '—'}</td>
                     <td><span class="badge ${badge}">${label}</span></td>
                     <td class="small opacity-75">${detailStr}</td>
@@ -437,6 +460,42 @@ function renderOrderTables(orders) {
     fullBody.innerHTML = rows.map(r => r.full).join('');
     recentBody.innerHTML = rows.slice(0, 10).map(r => r.recent).join('');
 }
+
+window.sendReviewEmailManual = async function (orderId, type, email, name) {
+    if (!email || email === 'N/A' || !email.includes('@')) {
+        alert('Cannot send review email: Customer email is missing.');
+        return;
+    }
+    const label = type === '7d' ? '1-Week Review Invite' : '2-Week Follow-up';
+    if (!confirm(`Send ${label} to ${name} (${email})?`)) return;
+
+    const token = sessionStorage.getItem('hh_admin_token');
+    try {
+        const res = await fetch(`${API_BASE}/api/cron-review-reminders`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                orderId,
+                emailType: type,
+                customerEmail: email,
+                customerName: name
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            alert(`✅ ${label} sent successfully!`);
+            loadOrders();
+        } else {
+            alert('Failed: ' + (data.error || 'Unknown error'));
+        }
+    } catch (e) {
+        alert('Network error: ' + e.message);
+    }
+};
 
 function renderLogsTable(logs) {
     const body = document.getElementById('logs-body');

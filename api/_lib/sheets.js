@@ -57,7 +57,7 @@ async function sign(text, privateKey) {
 export async function writeOrder(customer, items, paymentId, deliveryCost, total, isManual = false) {
     const SHEET_ID = process.env.GOOGLE_SHEET_ID;
     if (!SHEET_ID) return;
-    const ORDER_HEADERS = ['Timestamp', 'ID', 'Name', 'Phone', 'Email', 'Type', 'Address', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Products', 'Total', 'Source'];
+    const ORDER_HEADERS = ['Timestamp', 'ID', 'Name', 'Phone', 'Email', 'Type', 'Address', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Products', 'Total', 'Source', 'Review_7d', 'Review_14d'];
 
     try {
         const token = await getAccessToken();
@@ -85,7 +85,9 @@ export async function writeOrder(customer, items, paymentId, deliveryCost, total
             customer.address || 'Clinic Pickup',
             storage.Monday, storage.Tuesday, storage.Wednesday, storage.Thursday, storage.Friday, storage.Saturday, storage.Products,
             Number(total).toFixed(2),
-            isManual ? 'MANUAL' : 'ONLINE'
+            isManual ? 'MANUAL' : 'ONLINE',
+            '', // Review_7d
+            ''  // Review_14d
         ]];
 
         await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Orders!A:A:append?valueInputOption=RAW`, {
@@ -96,6 +98,61 @@ export async function writeOrder(customer, items, paymentId, deliveryCost, total
     } catch (err) {
         console.error('Sheets write error:', err.message);
         throw err;
+    }
+}
+
+/**
+ * Updates a specific review tracking status for an order in the "Orders" sheet.
+ * @param {string} orderId - Payment / Order ID (Column B)
+ * @param {'Review_7d'|'Review_14d'} field - Column to update
+ * @param {string} status - Value to set, e.g. "SENT 2026-08-26"
+ */
+export async function updateOrderReviewStatus(orderId, field, status) {
+    const SHEET_ID = process.env.GOOGLE_SHEET_ID;
+    if (!SHEET_ID || !orderId) return false;
+
+    try {
+        const token = await getAccessToken();
+        // Fetch column B (IDs) to find exact row number
+        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Orders!A1:R500`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const rows = data.values || [];
+        if (rows.length < 2) return false;
+
+        const headers = rows[0];
+        let colIndex = headers.indexOf(field);
+        if (colIndex === -1) {
+            colIndex = field === 'Review_7d' ? 16 : 17; // Column Q or R (0-indexed 16 or 17)
+        }
+        const colLetter = String.fromCharCode(65 + colIndex); // Q or R
+
+        // Find row index (1-based for Sheets API)
+        let targetRowIndex = -1;
+        for (let i = 1; i < rows.length; i++) {
+            if (rows[i][1] === orderId || (rows[i][1] && rows[i][1].includes(orderId))) {
+                targetRowIndex = i + 1; // 1-indexed
+                break;
+            }
+        }
+
+        if (targetRowIndex === -1) {
+            console.warn(`updateOrderReviewStatus: Order ID ${orderId} not found in sheet`);
+            return false;
+        }
+
+        const cellRange = `Orders!${colLetter}${targetRowIndex}`;
+        const updateRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${cellRange}?valueInputOption=USER_ENTERED`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ values: [[status]] })
+        });
+
+        return updateRes.ok;
+    } catch (err) {
+        console.error('updateOrderReviewStatus error:', err.message);
+        return false;
     }
 }
 
@@ -124,13 +181,13 @@ export async function writeLog(level, event, details = {}) {
     }
 }
 
-export async function readOrders(limit = 100) {
+export async function readOrders(limit = 200) {
     const SHEET_ID = process.env.GOOGLE_SHEET_ID;
     if (!SHEET_ID) return [];
 
     try {
         const token = await getAccessToken();
-        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Orders!A1:P${limit + 1}`, {
+        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Orders!A1:R${limit + 1}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -139,7 +196,7 @@ export async function readOrders(limit = 100) {
         const headers = rows[0];
         return rows.slice(1).reverse().map(row => {
             const obj = {};
-            headers.forEach((h, i) => obj[h] = row[i]);
+            headers.forEach((h, i) => obj[h] = row[i] || '');
             return obj;
         });
     } catch (err) {

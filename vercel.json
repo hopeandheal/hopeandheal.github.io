@@ -4,6 +4,12 @@
     "buildCommand": "npm run build",
     "outputDirectory": ".",
     "cleanUrls": true,
+    "crons": [
+        {
+            "path": "/api/cron-review-reminders",
+            "schedule": "30 4 * * *"
+        }
+    ],
     "rewrites": [
         {
             "source": "/api/(.*)",
