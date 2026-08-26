@@ -51,15 +51,13 @@ async function sendReviewEmail({ customerName, customerEmail, orderId, emailType
     }
 
     const firstName = (customerName || 'Friend').split(' ')[0];
-    const cleanOrderId = (orderId || '').split(' ')[0].replace(/[()]/g, '');
-    const orderRefStr = cleanOrderId ? ` (Ref: ${cleanOrderId})` : '';
 
     const subject = emailType === '7d'
         ? `Following up on your remedies – Dr. Nirav`
         : `Checking in on your health & recovery – Dr. Nirav`;
 
     const headline = emailType === '7d'
-        ? `How is your experience with Hope & Heal?`
+        ? `How are you feeling?`
         : `Checking in on your health journey`;
 
     const subheadline = emailType === '7d'
@@ -67,7 +65,7 @@ async function sendReviewEmail({ customerName, customerEmail, orderId, emailType
         : `A 2-week recovery follow-up from Dr. Nirav`;
 
     const bodyText = emailType === '7d'
-        ? `Hello ${firstName},\n\nIt has been a week since your order${orderRefStr}. We hope you are beginning to experience the gentle, restorative benefits of your natural remedies.\n\nCould you take a quick moment to share your feedback on Google? Your honest review helps others searching for natural healing and authentic homeopathic care find our clinic.\n\nWarm regards,\nDr. Nirav Khunt\nHope & Heal Homoeopathy Clinic`
+        ? `Hello ${firstName},\n\nIt has been a week since your consultation and prescribed remedies. We hope you are beginning to experience the gentle, restorative benefits of your homeopathic care.\n\nCould you take a quick moment to share your feedback on Google? Your honest review helps others looking for natural healing and authentic homeopathic care find our clinic.\n\nWarm regards,\nDr. Nirav Khunt\nHope & Heal Homoeopathy Clinic`
         : `Hello ${firstName},\n\nWe are checking in to see how your treatment and remedies have been supporting you over the past two weeks.\n\nIf Hope & Heal has made a positive difference in your skin, hair, or overall wellness, we would be deeply grateful if you could share your experience on Google.\n\nWarm regards,\nDr. Nirav Khunt\nHope & Heal Homoeopathy Clinic`;
 
     const params = {
@@ -76,7 +74,7 @@ async function sendReviewEmail({ customerName, customerEmail, orderId, emailType
         reply_to: 'hopeandhealhomoeopathy@gmail.com',
         customer_name: customerName,
         customer_email: customerEmail,
-        order_id: cleanOrderId,
+        order_id: '',
         review_type: emailType === '7d' ? '1-Week Check-in' : '2-Week Follow-up',
         subject: subject,
         headline: headline,
