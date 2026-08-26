@@ -40,13 +40,13 @@ async function sendReviewEmail({ customerName, customerEmail, orderId, emailType
     const KEY = process.env.EMAILJS_PUBLIC_KEY;
     const SECRET = process.env.EMAILJS_PRIVATE_KEY;
     
-    // Dedicated template for Google Review reminders
-    const TEMPLATE_ID = emailType === '7d'
-        ? (process.env.EMAILJS_TEMPLATE_REVIEW_7D || process.env.EMAILJS_TEMPLATE_REVIEW)
-        : (process.env.EMAILJS_TEMPLATE_REVIEW_14D || process.env.EMAILJS_TEMPLATE_REVIEW);
+    // Uses the dedicated review template if provided, or the unified customer template
+    const TEMPLATE_ID = process.env.EMAILJS_TEMPLATE_REVIEW_7D 
+        || process.env.EMAILJS_TEMPLATE_REVIEW 
+        || process.env.EMAILJS_TEMPLATE_CUSTOMER;
 
     if (!SERVICE || !TEMPLATE_ID || !KEY) {
-        log.warn('emailjs_review_template_not_configured', { emailType, orderId });
+        log.warn('emailjs_config_missing_for_review', { emailType, orderId });
         return false;
     }
 
@@ -60,12 +60,16 @@ async function sendReviewEmail({ customerName, customerEmail, orderId, emailType
         ? `How is your experience with Hope & Heal?`
         : `Hope you are feeling wonderful!`;
 
+    const subheadline = emailType === '7d'
+        ? `A 1-week wellness check-in on your remedies`
+        : `A 2-week follow-up on your health journey`;
+
     const bodyText = emailType === '7d'
         ? `Hello ${firstName},\n\nIt has been a week since your order (${orderId}). We hope you are beginning to experience the gentle, restorative benefits of your natural remedies.\n\nCould you take 30 seconds to share your experience on Google? Your review helps others looking for natural healing and authentic homeopathic care find us.`
         : `Hello ${firstName},\n\nWe are checking in to see how your treatment and remedies have been working for you over the past two weeks.\n\nIf Hope & Heal has made a positive difference in your skin, hair, or overall wellness, we would be deeply grateful if you could leave a 5-star Google review.\n\nThank you for trusting Hope & Heal with your healthcare.`;
 
     const params = {
-        to_name: customerName || 'Valued Patient',
+        to_name: firstName,
         to_email: customerEmail,
         reply_to: 'hopeandhealhomoeopathy@gmail.com',
         customer_name: customerName,
@@ -74,7 +78,10 @@ async function sendReviewEmail({ customerName, customerEmail, orderId, emailType
         review_type: emailType === '7d' ? '1-Week Check-in' : '2-Week Follow-up',
         subject: subject,
         headline: headline,
+        subheadline: subheadline,
         message: bodyText,
+        cta_text: '⭐ Leave a 5-Star Review on Google',
+        cta_url: GOOGLE_REVIEW_URL,
         review_url: GOOGLE_REVIEW_URL,
         whatsapp_url: CLINIC_WHATSAPP,
         total: total || ''

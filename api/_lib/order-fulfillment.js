@@ -225,9 +225,19 @@ export async function fulfillOrder({
 
     if (customerTemplate && customer.email) {
         try {
+            const firstName = sanitise(customer.name).split(' ')[0];
+            const orderSummaryText = `Your order has been received and is being prepared with care.\n\n📦 Treatments & Products:\n${breakdown}\n\n💳 Total Paid: ₹${Number(total).toFixed(2)}\n📍 Delivery/Pickup: ${customer.type === 'delivery' ? 'Home Delivery (' + (customer.address || 'Address on WhatsApp') + ')' : 'Clinic Pickup (Rajkot)'}\n🔖 Ref ID: ${fullPaymentRef}`;
+
             await sendEmail(customerTemplate, {
-                to_name: sanitise(customer.name).split(' ')[0],
+                to_name: firstName,
                 to_email: sanitise(customer.email),
+                subject: `Order Confirmation — Hope & Heal Clinic (${fullPaymentRef})`,
+                headline: 'Order Confirmed!',
+                subheadline: `Thank you for choosing Hope & Heal, ${firstName}.`,
+                message: orderSummaryText,
+                cta_text: '💬 Message Clinic on WhatsApp',
+                cta_url: 'https://wa.me/918469022764',
+                // Backward compatibility params in case old placeholders are cached
                 day_breakdown: breakdown,
                 total_amount: `\u20B9${Number(total).toFixed(2)}`,
                 ref_id: paymentId || rzpId
