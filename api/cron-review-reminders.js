@@ -103,13 +103,36 @@ async function sendReviewEmail({ customerName, customerEmail, orderId, emailType
         if (!res.ok) {
             const err = await res.text();
             log.error('review_email_failed', { orderId, emailType, err });
+            try {
+                await writeLog('ERROR', `review_email_${emailType}_failed`, {
+                    orderId,
+                    emailType,
+                    to: customerEmail,
+                    error: err.slice(0, 150)
+                });
+            } catch (_) {}
             return false;
         }
 
         log.info('review_email_sent', { orderId, emailType, customerEmail });
+        try {
+            await writeLog('INFO', `review_email_${emailType}_sent`, {
+                orderId,
+                emailType,
+                to: customerEmail
+            });
+        } catch (_) {}
         return true;
     } catch (e) {
         log.error('review_email_exception', { orderId, emailType, error: e.message });
+        try {
+            await writeLog('ERROR', `review_email_${emailType}_exception`, {
+                orderId,
+                emailType,
+                to: customerEmail,
+                error: e.message
+            });
+        } catch (_) {}
         return false;
     }
 }

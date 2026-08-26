@@ -82,30 +82,60 @@ async function sendTelegram(customer, items, paymentId, total) {
     });
 }
 
-async function sendEmail(templateId, params, label) {
+async function sendEmail(templateId, params, label, paymentRef = '') {
     const SERVICE = process.env.EMAILJS_SERVICE_ID;
     const KEY = process.env.EMAILJS_PUBLIC_KEY;
     const SECRET = process.env.EMAILJS_PRIVATE_KEY;
     if (!SERVICE || !templateId || !KEY) {
         log.error('emailjs_config_missing', { label });
-        return;
+        try { await writeLog('ERROR', 'emailjs_config_missing', { label, paymentRef }); } catch (_) {}
+        return false;
     }
 
-    const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            service_id: SERVICE, 
-            template_id: templateId, 
-            user_id: KEY, 
-            accessToken: SECRET,
-            template_params: params 
-        })
-    });
-    
-    if (!res.ok) {
-        const errText = await res.text();
-        log.error('emailjs_send_failed', { label, err: errText });
+    try {
+        const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                service_id: SERVICE, 
+                template_id: templateId, 
+                user_id: KEY, 
+                accessToken: SECRET,
+                template_params: params 
+            })
+        });
+        
+        if (!res.ok) {
+            const errText = await res.text();
+            log.error('emailjs_send_failed', { label, err: errText, paymentRef });
+            try { 
+                await writeLog('ERROR', `email_${label}_failed`, { 
+                    error: errText.slice(0, 150), 
+                    paymentId: paymentRef, 
+                    to: params.to_email || 'N/A' 
+                }); 
+            } catch (_) {}
+            return false;
+        }
+
+        try {
+            await writeLog('INFO', `email_${label}_sent`, {
+                paymentId: paymentRef,
+                to: params.to_email || 'N/A'
+            });
+        } catch (_) {}
+
+        return true;
+    } catch (e) {
+        log.error('emailjs_network_error', { label, err: e.message, paymentRef });
+        try { 
+            await writeLog('ERROR', `email_${label}_network_error`, { 
+                error: e.message, 
+                paymentId: paymentRef, 
+                to: params.to_email || 'N/A' 
+            }); 
+        } catch (_) {}
+        return false;
     }
 }
 
@@ -216,7 +246,7 @@ export async function fulfillOrder({
                 treatments_breakdown: breakdown,
                 total: `\u20B9${Number(total).toFixed(2)}`,
                 payment_id: fullPaymentRef
-            }, 'owner');
+            }, 'owner', fullPaymentRef);
         } catch (e) {
             log.error('fulfillment_email_owner_failed', { error: e.message });
             try { await writeLog('ERROR', 'email_owner_failed', { error: e.message, paymentId: fullPaymentRef }); } catch (_) {}
@@ -241,10 +271,10 @@ export async function fulfillOrder({
                 day_breakdown: breakdown,
                 total_amount: `\u20B9${Number(total).toFixed(2)}`,
                 ref_id: paymentId || rzpId
-            }, 'customer');
+            }, 'customer', fullPaymentRef);
         } catch (e) {
             log.error('fulfillment_email_customer_failed', { error: e.message });
-            try { await writeLog('ERROR', 'email_customer_failed', { error: e.message, paymentId: paymentId || rzpId }); } catch (_) {}
+            try { await writeLog('ERROR', 'email_customer_failed', { error: e.message, paymentId: fullPaymentRef }); } catch (_) {}
         }
     }
 
