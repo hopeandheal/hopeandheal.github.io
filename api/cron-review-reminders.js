@@ -40,13 +40,13 @@ async function sendReviewEmail({ customerName, customerEmail, orderId, emailType
     const KEY = process.env.EMAILJS_PUBLIC_KEY;
     const SECRET = process.env.EMAILJS_PRIVATE_KEY;
     
-    // We can use the custom review template ID if set, or fallback to the customer template
+    // Dedicated template for Google Review reminders
     const TEMPLATE_ID = emailType === '7d'
-        ? (process.env.EMAILJS_TEMPLATE_REVIEW_7D || process.env.EMAILJS_TEMPLATE_CUSTOMER)
-        : (process.env.EMAILJS_TEMPLATE_REVIEW_14D || process.env.EMAILJS_TEMPLATE_CUSTOMER);
+        ? (process.env.EMAILJS_TEMPLATE_REVIEW_7D || process.env.EMAILJS_TEMPLATE_REVIEW)
+        : (process.env.EMAILJS_TEMPLATE_REVIEW_14D || process.env.EMAILJS_TEMPLATE_REVIEW);
 
     if (!SERVICE || !TEMPLATE_ID || !KEY) {
-        log.error('emailjs_config_missing_for_review', { emailType, orderId });
+        log.warn('emailjs_review_template_not_configured', { emailType, orderId });
         return false;
     }
 
