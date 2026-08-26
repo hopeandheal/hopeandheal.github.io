@@ -9,8 +9,8 @@ import http from 'http';
 import fs from 'fs';
 import pathMod from 'path';
 import { fileURLToPath } from 'url';
-import { writeOrder, writeLog, readOrders, readLogs, readProducts, updateProducts } from './api/lib/sheets.js';
-import { createOrderCalendarEvents } from './api/lib/calendar.js';
+import { writeOrder, writeLog, readOrders, readLogs, readProducts, updateProducts } from './api/_lib/sheets.js';
+import { createOrderCalendarEvents } from './api/_lib/calendar.js';
 
 const __dirname = pathMod.dirname(fileURLToPath(import.meta.url));
 const envPath = pathMod.resolve(process.cwd(), '.env.local');

@@ -9,8 +9,8 @@
  */
 
 import crypto from 'crypto';
-import log from './lib/logger.js';
-import { fulfillOrder } from './lib/order-fulfillment.js';
+import log from './_lib/logger.js';
+import { fulfillOrder } from './_lib/order-fulfillment.js';
 
 function verifyRazorpaySignature(orderId, paymentId, signature) {
     const isDev = process.env.NODE_ENV === 'development' || !process.env.VERCEL_ENV;

@@ -4,8 +4,8 @@
  * Security: Web Crypto API for zero-dependency JWT verification.
  */
 
-import { readOrders, readLogs } from './lib/sheets.js';
-import log from './lib/logger.js';
+import { readOrders, readLogs } from './_lib/sheets.js';
+import log from './_lib/logger.js';
 
 async function verifyJWT(token, secret) {
     try {

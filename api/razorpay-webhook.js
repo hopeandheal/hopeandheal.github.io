@@ -10,8 +10,8 @@
 
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
-import log from './lib/logger.js';
-import { fulfillOrder } from './lib/order-fulfillment.js';
+import log from './_lib/logger.js';
+import { fulfillOrder } from './_lib/order-fulfillment.js';
 
 function verifyWebhookSignature(rawBody, signature, secret) {
     if (!signature || !secret) return false;

@@ -13,3 +13,4 @@ test_*.mjs
 test_*.js
 test_*.cjs
 *_backup.html
+.env*

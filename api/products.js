@@ -5,7 +5,7 @@
  * No authentication needed — public-facing for visitors.
  */
 
-import { readProducts } from './lib/sheets.js';
+import { readProducts } from './_lib/sheets.js';
 
 export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();

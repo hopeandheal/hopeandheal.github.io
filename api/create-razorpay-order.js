@@ -1,5 +1,5 @@
 import Razorpay from 'razorpay';
-import log from './lib/logger.js';
+import log from './_lib/logger.js';
 
 export default async function handler(req, res) {
     if (req.method === 'OPTIONS') {

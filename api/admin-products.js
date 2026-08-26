@@ -2,8 +2,8 @@
  * api/admin-products.js — Product Catalog Management
  */
 
-import { readProducts, updateProducts, writeLog } from './lib/sheets.js';
-import log from './lib/logger.js';
+import { readProducts, updateProducts, writeLog } from './_lib/sheets.js';
+import log from './_lib/logger.js';
 
 async function verifyJWT(token, secret) {
     try {
