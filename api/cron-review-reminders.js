@@ -51,22 +51,24 @@ async function sendReviewEmail({ customerName, customerEmail, orderId, emailType
     }
 
     const firstName = (customerName || 'Friend').split(' ')[0];
+    const cleanOrderId = (orderId || '').split(' ')[0].replace(/[()]/g, '');
+    const orderRefStr = cleanOrderId ? ` (Ref: ${cleanOrderId})` : '';
 
     const subject = emailType === '7d'
-        ? `How are your remedies feeling? – Dr. Jenish & Hope and Heal Clinic`
-        : `Checking in on your wellness journey – Hope & Heal`;
+        ? `Following up on your remedies – Dr. Jenish`
+        : `Checking in on your health & recovery – Dr. Jenish`;
 
     const headline = emailType === '7d'
         ? `How is your experience with Hope & Heal?`
-        : `Hope you are feeling wonderful!`;
+        : `Checking in on your health journey`;
 
     const subheadline = emailType === '7d'
-        ? `A 1-week wellness check-in on your remedies`
-        : `A 2-week follow-up on your health journey`;
+        ? `A 1-week wellness check-in from Dr. Jenish`
+        : `A 2-week recovery follow-up from Dr. Jenish`;
 
     const bodyText = emailType === '7d'
-        ? `Hello ${firstName},\n\nIt has been a week since your order (${orderId}). We hope you are beginning to experience the gentle, restorative benefits of your natural remedies.\n\nCould you take 30 seconds to share your experience on Google? Your review helps others looking for natural healing and authentic homeopathic care find us.`
-        : `Hello ${firstName},\n\nWe are checking in to see how your treatment and remedies have been working for you over the past two weeks.\n\nIf Hope & Heal has made a positive difference in your skin, hair, or overall wellness, we would be deeply grateful if you could leave a 5-star Google review.\n\nThank you for trusting Hope & Heal with your healthcare.`;
+        ? `Hello ${firstName},\n\nIt has been a week since your order${orderRefStr}. We hope you are beginning to experience the gentle, restorative benefits of your natural remedies.\n\nCould you take a quick moment to share your feedback on Google? Your honest review helps others searching for natural healing and authentic homeopathic care find our clinic.\n\nWarm regards,\nDr. Jenish Khunt\nHope & Heal Homoeopathy Clinic`
+        : `Hello ${firstName},\n\nWe are checking in to see how your treatment and remedies have been supporting you over the past two weeks.\n\nIf Hope & Heal has made a positive difference in your skin, hair, or overall wellness, we would be deeply grateful if you could share your experience on Google.\n\nWarm regards,\nDr. Jenish Khunt\nHope & Heal Homoeopathy Clinic`;
 
     const params = {
         to_name: firstName,
@@ -74,13 +76,13 @@ async function sendReviewEmail({ customerName, customerEmail, orderId, emailType
         reply_to: 'hopeandhealhomoeopathy@gmail.com',
         customer_name: customerName,
         customer_email: customerEmail,
-        order_id: orderId,
+        order_id: cleanOrderId,
         review_type: emailType === '7d' ? '1-Week Check-in' : '2-Week Follow-up',
         subject: subject,
         headline: headline,
         subheadline: subheadline,
         message: bodyText,
-        cta_text: '⭐ Leave a 5-Star Review on Google',
+        cta_text: 'Share Your Feedback on Google',
         cta_url: GOOGLE_REVIEW_URL,
         review_url: GOOGLE_REVIEW_URL,
         whatsapp_url: CLINIC_WHATSAPP,
