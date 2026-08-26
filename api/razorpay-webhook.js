@@ -11,7 +11,7 @@
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
 import log from './_lib/logger.js';
-import { fulfillOrder } from './_lib/order-fulfillment.js';
+import { fulfillOrder, formatName } from './_lib/order-fulfillment.js';
 
 function verifyWebhookSignature(rawBody, signature, secret) {
     if (!signature || !secret) return false;
@@ -128,7 +128,8 @@ export default async function handler(req, res) {
             }
 
             // Extract customer info from notes or payment
-            const customerName = notes.customer_name || paymentEntity.notes?.customer_name || paymentEntity.email?.split('@')[0] || 'Clinic Patient';
+            const rawCustomerName = notes.customer_name || paymentEntity.notes?.customer_name || paymentEntity.email?.split('@')[0] || 'Clinic Patient';
+            const customerName = formatName(rawCustomerName);
             const customerEmail = notes.customer_email || paymentEntity.email || '';
             const customerPhone = notes.customer_phone || notes.full_phone || paymentEntity.contact || '';
             const customerType = notes.customer_type || (notes.customer_address?.includes('Clinic Pickup') ? 'pickup' : 'delivery');

@@ -27,6 +27,15 @@ function sanitise(str, maxLen = 300) {
     )).trim().slice(0, maxLen);
 }
 
+export function formatName(str) {
+    if (!str || typeof str !== 'string') return 'Clinic Patient';
+    let clean = str.trim();
+    if (/^[a-zA-Z0-9]+[._][a-zA-Z0-9]+$/.test(clean)) {
+        clean = clean.replace(/[._]/g, ' ');
+    }
+    return clean.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
 function buildDayBreakdown(items) {
     const byDay = {};
     (items || []).forEach(i => {
@@ -157,6 +166,10 @@ export async function fulfillOrder({
     const fullPaymentRef = rzpId 
         ? `${paymentId || 'HH-ONLINE'} (Razorpay: ${rzpId})`
         : (paymentId || `HH-${Date.now().toString(36).toUpperCase()}`);
+
+    if (customer) {
+        customer.name = formatName(customer.name);
+    }
 
     log.info('fulfilling_order', { 
         customer: customer.name, 
