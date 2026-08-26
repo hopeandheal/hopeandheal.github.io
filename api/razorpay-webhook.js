@@ -139,7 +139,16 @@ export default async function handler(req, res) {
             let items = [];
             if (notes.items_json) {
                 try {
-                    items = JSON.parse(notes.items_json);
+                    const parsed = JSON.parse(notes.items_json);
+                    if (Array.isArray(parsed)) {
+                        items = parsed.map(i => ({
+                            id: i.id || '',
+                            name: (i.name || i.title || i.product || notes.items_summary || 'Herbal Product').trim(),
+                            price: Number(i.price || 0),
+                            qty: Number(i.qty || i.quantity || 1),
+                            day: i.day || 'Products'
+                        }));
+                    }
                 } catch (_) {}
             }
             

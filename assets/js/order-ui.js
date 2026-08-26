@@ -124,10 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 paymentMethod: payType
             },
             items: cart.map(i => ({
-                id: i.id,
-                name: esc(i.name),
-                price: i.price,
-                qty: i.quantity || 1,
+                id: i.id || '',
+                name: (i.name || i.title || 'Herbal Product').trim(),
+                price: Number(i.price || 0),
+                qty: Number(i.quantity || i.qty || 1),
                 day: i.day || 'Products'
             })),
             deliveryCost: deliveryFee,
@@ -149,7 +149,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.quantity || 1, day: i.day || 'Products' })),
+                    items: cart.map(i => ({
+                        id: i.id || '',
+                        name: (i.name || i.title || 'Herbal Product').trim(),
+                        price: Number(i.price || 0),
+                        qty: Number(i.quantity || i.qty || 1),
+                        day: i.day || 'Products'
+                    })),
                     deliveryCost: deliveryFee,
                     customer: payload.customer,
                     paymentId: payload.paymentId

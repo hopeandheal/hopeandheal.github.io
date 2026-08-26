@@ -30,9 +30,11 @@ function sanitise(str, maxLen = 300) {
 function buildDayBreakdown(items) {
     const byDay = {};
     (items || []).forEach(i => {
-        const day = i.day || 'Products';
+        const day = (i.day === 'Product' || !i.day) ? 'Products' : i.day;
         if (!byDay[day]) byDay[day] = [];
-        byDay[day].push(`${i.name || 'Herbal Product'} x${i.qty || 1}`);
+        const itemName = (i.name || i.title || i.product || 'Herbal Product').trim();
+        const itemQty = i.qty || i.quantity || 1;
+        byDay[day].push(`${itemName} x${itemQty}`);
     });
 
     return Object.entries(byDay)

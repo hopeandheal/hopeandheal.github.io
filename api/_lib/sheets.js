@@ -66,12 +66,14 @@ export async function writeOrder(customer, items, paymentId, deliveryCost, total
 
         // Build per-category portions
         const storage = { Monday: '', Tuesday: '', Wednesday: '', Thursday: '', Friday: '', Saturday: '', Products: '' };
-        for (const item of items) {
-            const key = item.day === 'Product' ? 'Products' : item.day;
+        for (const item of (items || [])) {
+            const key = (item.day === 'Product' || !item.day) ? 'Products' : item.day;
+            const itemName = (item.name || item.title || item.product || 'Herbal Product').trim();
+            const itemQty = item.qty || item.quantity || 1;
             if (storage[key] !== undefined) {
-                storage[key] = (storage[key] ? storage[key] + ', ' : '') + `${item.name} (x${item.qty})`;
+                storage[key] = (storage[key] ? storage[key] + ', ' : '') + `${itemName} (x${itemQty})`;
             } else {
-                storage.Products = (storage.Products ? storage.Products + ', ' : '') + `${item.name} (x${item.qty})`;
+                storage.Products = (storage.Products ? storage.Products + ', ' : '') + `${itemName} (x${itemQty})`;
             }
         }
 
