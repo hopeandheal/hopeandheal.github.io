@@ -149,8 +149,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    items: cart.map(i => ({ price: i.price, qty: i.quantity || 1 })),
-                    deliveryCost: deliveryFee
+                    items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.quantity || 1, day: i.day || 'Products' })),
+                    deliveryCost: deliveryFee,
+                    customer: payload.customer,
+                    paymentId: payload.paymentId
                 })
             });
 

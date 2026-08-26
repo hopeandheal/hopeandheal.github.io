@@ -27,146 +27,77 @@ const HAS_CAL = !!(process.env.GOOGLE_SERVICE_ACCOUNT_JSON && process.env.GOOGLE
 const localOrders = [];
 const localLogs = [];
 
+import notifyHandler from './api/notify.js';
+import createOrderHandler from './api/create-razorpay-order.js';
+import webhookHandler from './api/razorpay-webhook.js';
+
+function adaptHandler(handlerFn) {
+    return async (body, query, method, headers, req, res) => {
+        return new Promise((resolve) => {
+            const mockReq = {
+                method,
+                headers: headers || {},
+                body: body || {},
+                query: query ? Object.fromEntries(query.entries()) : {}
+            };
+            let statusCode = 200;
+            const resHeaders = {};
+            const mockRes = {
+                status(code) {
+                    statusCode = code;
+                    return this;
+                },
+                setHeader(k, v) {
+                    resHeaders[k] = v;
+                    return this;
+                },
+                json(data) {
+                    resolve({ status: statusCode, body: data, headers: resHeaders });
+                },
+                end(data) {
+                    resolve({ status: statusCode, body: data || {}, headers: resHeaders });
+                }
+            };
+            try {
+                handlerFn(mockReq, mockRes).catch(err => {
+                    resolve({ status: 500, body: { error: err.message } });
+                });
+            } catch (err) {
+                resolve({ status: 500, body: { error: err.message } });
+            }
+        });
+    };
+}
+
 const MOCK_HANDLERS = {
-    '/api/notify': async (body, _q, method) => {
+    '/api/notify': adaptHandler(notifyHandler),
+    '/api/create-razorpay-order': async (body, query, method, headers, req, res) => {
+        // If real Razorpay keys are present, use real handler; otherwise fallback to mock
+        if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET && !process.env.RAZORPAY_KEY_ID.includes('mock')) {
+            return adaptHandler(createOrderHandler)(body, query, method, headers, req, res);
+        }
+        // Dev mock fallback with validation
         if (method !== 'POST') return { status: 405, body: { error: 'Method not allowed' } };
-        console.log('\n🏥 [DEV] /api/notify called');
-        
-        const newOrder = {
-            'Timestamp': new Date().toISOString(),
-            'ID': body.paymentId || 'MOCK_' + Date.now(),
-            'Name': body.customer?.name || 'Unknown',
-            'Phone': body.customer?.phone || '',
-            'Email': body.customer?.email || '',
-            'Type': body.customer?.type === 'delivery' ? 'Home Visit' : 'Clinic',
-            'Address': body.customer?.address || (body.customer?.type === 'pickup' ? 'Rajkot Clinic' : ''),
-            'Total': (body.total || 0).toFixed(2),
-            ...Object.fromEntries((body.items || []).map(i => [i.day || 'Products', i.name + ' (x' + (i.qty || 1) + ')']))
-        };
-
-        localOrders.unshift(newOrder);
-        localLogs.unshift({ 'Timestamp': new Date().toISOString(), 'Level': 'INFO', 'Event': 'order_received', 'Details': `Customer: ${body.customer?.name}` });
-
-        // Real Telegram notification
-        const TG_TOKEN = process.env.TG_BOT_TOKEN;
-        const TG_CHAT = process.env.TG_CHAT_ID;
-        if (TG_TOKEN && TG_CHAT) {
-            try {
-                const customer = body.customer || {};
-                const items = body.items || [];
-                const cleanPhone = (customer.phone || '').replace(/\D/g, '');
-                const waPhone = cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone;
-                const waText = encodeURIComponent(`Hello ${(customer.name || '').split(' ')[0]}, your Hope & Heal order ${body.paymentId} is received!`);
-                const breakdown = items.map(i => `• ${i.name} x${i.qty || 1}`).join('\n');
-                const msg = `🌿 *NEW ORDER (DEV TEST)* 🌿\n\n` +
-                    `👤 *Patient*: ${customer.name || 'Unknown'}\n` +
-                    `📞 *Phone*: ${customer.phone || '—'}\n` +
-                    `💬 [WhatsApp](https://wa.me/${waPhone}?text=${waText})\n` +
-                    `📍 *Type*: ${customer.type === 'delivery' ? 'Home Delivery' : 'Clinic Pickup'}\n` +
-                    `🏠 *Address*: ${customer.address || 'Clinic Pickup'}\n` +
-                    `💳 *Payment*: ${customer.paymentMethod || 'online'}\n\n` +
-                    `📋 *Items*:\n${breakdown}\n\n` +
-                    `💰 *Total*: ₹${Number(body.total || 0).toFixed(2)}\n` +
-                    `🆔 *Ref*: \`${body.paymentId}\``;
-                await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: TG_CHAT, text: msg, parse_mode: 'Markdown' })
-                });
-                console.log('   ✅ Telegram notification sent');
-            } catch (e) { console.error('   ❌ Telegram error:', e.message); }
-        } else {
-            console.log('   ⚠️  No Telegram credentials, skipping notification');
-        }
-
-        // Real Email via EmailJS
-        const SERVICE = process.env.EMAILJS_SERVICE_ID;
-        const KEY = process.env.EMAILJS_PUBLIC_KEY;
-        const SECRET = process.env.EMAILJS_PRIVATE_KEY;
-        const ownerTemplate = process.env.EMAILJS_TEMPLATE_OWNER;
-        const customerTemplate = process.env.EMAILJS_TEMPLATE_CUSTOMER;
-        if (SERVICE && KEY && ownerTemplate) {
-            try {
-                const customer = body.customer || {};
-                const items = body.items || [];
-                const breakdown = items.map(i => `• ${i.name} x${i.qty || 1}`).join('\n');
-                await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        service_id: SERVICE,
-                        template_id: ownerTemplate,
-                        user_id: KEY,
-                        accessToken: SECRET,
-                        template_params: {
-                            patient_name: customer.name || 'Customer',
-                            patient_phone: customer.phone || '—',
-                            address: customer.address || 'Clinic Pickup',
-                            order_type: customer.type === 'delivery' ? 'Home Delivery' : 'Clinic Pickup',
-                            treatments_breakdown: breakdown,
-                            total: `₹${Number(body.total || 0).toFixed(2)}`,
-                            payment_id: body.paymentId
-                        }
-                    })
-                });
-                console.log('   ✅ Owner email sent');
-            } catch (e) { console.error('   ❌ Email error:', e.message); }
-        }
-        if (SERVICE && KEY && customerTemplate && body.customer?.email) {
-            try {
-                const customer = body.customer || {};
-                const items = body.items || [];
-                const breakdown = items.map(i => `• ${i.name} x${i.qty || 1}`).join('\n');
-                await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        service_id: SERVICE,
-                        template_id: customerTemplate,
-                        user_id: KEY,
-                        accessToken: SECRET,
-                        template_params: {
-                            to_name: (customer.name || 'Customer').split(' ')[0],
-                            to_email: customer.email,
-                            day_breakdown: breakdown,
-                            total_amount: `₹${Number(body.total || 0).toFixed(2)}`,
-                            ref_id: body.paymentId
-                        }
-                    })
-                });
-                console.log('   ✅ Customer email sent');
-            } catch (e) { console.error('   ❌ Customer email error:', e.message); }
-        }
-
-        if (HAS_GOOGLE) {
-            try {
-                await writeOrder(body.customer, body.items, body.paymentId, body.deliveryCost || 0, body.total);
-                await writeLog('INFO', 'order_received', { paymentId: body.paymentId, customer: body.customer?.name });
-                console.log('   ✅ REAL Google Sheets written');
-            } catch (e) { console.error('   ❌ Sheets error:', e.message); }
-        } else { console.log('   ✅ Mock Sheets entry successful (Saved in-memory)'); }
-
-        return { status: 200, body: { success: true, ref: body.paymentId } };
-    },
-
-    '/api/create-razorpay-order': async (body, _q, method) => {
-        if (method !== 'POST') return { status: 405, body: { error: 'Method not allowed' } };
-        console.log('\n💳 [DEV] /api/create-razorpay-order called');
         const { items, deliveryCost } = body;
-        const subtotal = (items || []).reduce((sum, item) => sum + (Number(item.price) * Number(item.qty || 1)), 0);
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return { status: 400, body: { error: 'Cart is empty' } };
+        }
+        const subtotal = items.reduce((sum, item) => sum + (Number(item.price) * Number(item.qty || 1)), 0);
         const total = subtotal + (Number(deliveryCost) || 0);
+        if (total <= 0) return { status: 400, body: { error: 'Invalid order amount' } };
+
         const orderId = 'order_mock_' + Math.random().toString(36).substring(2, 10).toUpperCase();
-        console.log(`   ✅ Mock Razorpay Order created: ${orderId} for amount: ₹${total.toFixed(2)}`);
         return {
             status: 200,
             body: {
                 success: true,
                 orderId: orderId,
                 amount: Math.round(total * 100),
-                keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_mockkey'
+                keyId: 'rzp_test_mockkey'
             }
         };
     },
+    '/api/razorpay-webhook': adaptHandler(webhookHandler),
 
     '/api/admin-auth': (body) => {
         const expected = process.env.ADMIN_PWD || 'dev-admin';
