@@ -201,6 +201,12 @@ export async function readOrders(limit = 200) {
     const SHEET_ID = process.env.GOOGLE_SHEET_ID;
     if (!SHEET_ID) return [];
 
+    const DEFAULT_ORDER_HEADERS = [
+        'Timestamp', 'ID', 'Name', 'Phone', 'Email', 'Type', 'Address',
+        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+        'Products', 'Total', 'Source', 'Review_7d', 'Review_14d'
+    ];
+
     try {
         const token = await getAccessToken();
         const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Orders!A1:R${limit + 1}`, {
@@ -209,10 +215,24 @@ export async function readOrders(limit = 200) {
         const data = await res.json();
         const rows = data.values || [];
         if (rows.length < 2) return [];
-        const headers = rows[0];
+        const headers = rows[0] || [];
+
+        // If sheet row 1 doesn't have Q and R headers, ensure they get updated
+        if (headers.length < DEFAULT_ORDER_HEADERS.length) {
+            try {
+                await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Orders!A1:R1?valueInputOption=USER_ENTERED`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ values: [DEFAULT_ORDER_HEADERS] })
+                });
+            } catch (_) {}
+        }
+
         return rows.slice(1).reverse().map(row => {
             const obj = {};
-            headers.forEach((h, i) => obj[h] = row[i] || '');
+            DEFAULT_ORDER_HEADERS.forEach((h, i) => {
+                obj[h] = row[i] || '';
+            });
             return obj;
         });
     } catch (err) {
