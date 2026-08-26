@@ -4,7 +4,7 @@
  * Security: Web Crypto API for zero-dependency JWT verification.
  */
 
-import { readOrders, readLogs } from './_lib/sheets.js';
+import { readOrders, readLogs, updateOrderField } from './_lib/sheets.js';
 import log from './_lib/logger.js';
 
 async function verifyJWT(token, secret) {
@@ -33,7 +33,6 @@ async function verifyJWT(token, secret) {
 
 export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
     const auth = req.headers.authorization || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
@@ -46,6 +45,21 @@ export default async function handler(req, res) {
         log.warn('admin_unauthorized', { ip: (req.headers['x-forwarded-for'] || '').split(',')[0] });
         return res.status(401).json({ error: 'Unauthorized' });
     }
+
+    if (req.method === 'POST') {
+        const { orderId, field, value } = req.body || {};
+        if (!orderId || !field) {
+            return res.status(400).json({ error: 'orderId and field required' });
+        }
+        const success = await updateOrderField(orderId, field, value);
+        if (success) {
+            return res.status(200).json({ success: true, message: `Updated ${field} for order ${orderId}` });
+        } else {
+            return res.status(500).json({ error: 'Failed to update order field in Google Sheets' });
+        }
+    }
+
+    if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
     const type = req.query.type || 'orders';
     try {

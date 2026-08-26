@@ -11,10 +11,18 @@ async function getAccessToken() {
     if (!credsStr) throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON not set');
 
     let creds;
-    try {
-        creds = JSON.parse(credsStr);
-    } catch {
-        throw new Error('Invalid GOOGLE_SERVICE_ACCOUNT_JSON format');
+    if (typeof credsStr === 'object') {
+        creds = credsStr;
+    } else {
+        try {
+            creds = JSON.parse(credsStr);
+        } catch {
+            try {
+                creds = JSON.parse(credsStr.replace(/\\n/g, '\n'));
+            } catch {
+                throw new Error('Invalid GOOGLE_SERVICE_ACCOUNT_JSON format');
+            }
+        }
     }
 
     const header = b64(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
@@ -104,12 +112,12 @@ export async function writeOrder(customer, items, paymentId, deliveryCost, total
 }
 
 /**
- * Updates a specific review tracking status for an order in the "Orders" sheet.
+ * Updates a specific column for an order in the "Orders" sheet.
  * @param {string} orderId - Payment / Order ID (Column B)
- * @param {'Review_7d'|'Review_14d'} field - Column to update
- * @param {string} status - Value to set, e.g. "SENT 2026-08-26"
+ * @param {string} field - Header column name to update (e.g. 'Products', 'Review_7d', 'Review_14d')
+ * @param {string} value - Value to set
  */
-export async function updateOrderReviewStatus(orderId, field, status) {
+export async function updateOrderField(orderId, field, value) {
     const SHEET_ID = process.env.GOOGLE_SHEET_ID;
     if (!SHEET_ID || !orderId) return false;
 
@@ -126,21 +134,25 @@ export async function updateOrderReviewStatus(orderId, field, status) {
         const headers = rows[0];
         let colIndex = headers.indexOf(field);
         if (colIndex === -1) {
-            colIndex = field === 'Review_7d' ? 16 : 17; // Column Q or R (0-indexed 16 or 17)
+            if (field === 'Review_7d') colIndex = 16;
+            else if (field === 'Review_14d') colIndex = 17;
+            else if (field === 'Products') colIndex = 13;
+            else return false;
         }
-        const colLetter = String.fromCharCode(65 + colIndex); // Q or R
+        const colLetter = String.fromCharCode(65 + colIndex);
 
         // Find row index (1-based for Sheets API)
         let targetRowIndex = -1;
         for (let i = 1; i < rows.length; i++) {
-            if (rows[i][1] === orderId || (rows[i][1] && rows[i][1].includes(orderId))) {
+            const rowId = rows[i][1] || '';
+            if (rowId === orderId || rowId.includes(orderId) || orderId.includes(rowId)) {
                 targetRowIndex = i + 1; // 1-indexed
                 break;
             }
         }
 
         if (targetRowIndex === -1) {
-            console.warn(`updateOrderReviewStatus: Order ID ${orderId} not found in sheet`);
+            console.warn(`updateOrderField: Order ID ${orderId} not found in sheet`);
             return false;
         }
 
@@ -148,15 +160,17 @@ export async function updateOrderReviewStatus(orderId, field, status) {
         const updateRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${cellRange}?valueInputOption=USER_ENTERED`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ values: [[status]] })
+            body: JSON.stringify({ values: [[value]] })
         });
 
         return updateRes.ok;
     } catch (err) {
-        console.error('updateOrderReviewStatus error:', err.message);
+        console.error('updateOrderField error:', err.message);
         return false;
     }
 }
+
+export const updateOrderReviewStatus = updateOrderField;
 
 /**
  * Appends a log entry to the "Logs" sheet.
