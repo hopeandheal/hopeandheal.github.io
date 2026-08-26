@@ -12,7 +12,8 @@
 import log from './_lib/logger.js';
 import { readOrders, updateOrderReviewStatus, writeLog } from './_lib/sheets.js';
 
-const GOOGLE_REVIEW_URL = 'https://search.google.com/local/writereview?placeid=ChIJFbK7eqvLWTkRyKIzl9cf35I';
+const GOOGLE_REVIEW_URL = process.env.GOOGLE_REVIEW_URL 
+    || 'https://www.google.com/maps/search/?api=1&query=Hope+%26+Heal+homoeopathic+clinic,+Back+Bone+Shopping+Centre,+Mayani+Chowk,+Chandreshnagar,+Rajkot,+Gujarat+360004';
 const CLINIC_WHATSAPP = 'https://wa.me/918469022764';
 
 /**
