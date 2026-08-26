@@ -36,7 +36,7 @@ function parseSheetTimestamp(timestampStr) {
 /**
  * Sends an email using EmailJS API.
  */
-async function sendReviewEmail({ customerName, customerEmail, orderId, emailType, total }) {
+async function sendReviewEmail({ customerName, customerEmail, orderId, emailType, products, total }) {
     const SERVICE = process.env.EMAILJS_SERVICE_ID;
     const KEY = process.env.EMAILJS_PUBLIC_KEY;
     const SECRET = process.env.EMAILJS_PRIVATE_KEY;
@@ -52,22 +52,25 @@ async function sendReviewEmail({ customerName, customerEmail, orderId, emailType
     }
 
     const firstName = (customerName || 'Friend').split(' ')[0];
+    const productsBlock = (products && products.trim())
+        ? `\n\n📦 Products Delivered:\n${products.trim()}`
+        : '';
 
     const subject = emailType === '7d'
-        ? `Following up on your remedies – Dr. Nirav`
-        : `Checking in on your health & recovery – Dr. Nirav`;
+        ? `How are you liking your Hope & Heal products? – Dr. Nirav`
+        : `Following up on your Hope & Heal order – Dr. Nirav`;
 
     const headline = emailType === '7d'
-        ? `How are you feeling?`
-        : `Checking in on your health journey`;
+        ? `How are your products working for you?`
+        : `We would love your feedback!`;
 
     const subheadline = emailType === '7d'
-        ? `A 1-week wellness check-in from Dr. Nirav`
-        : `A 2-week recovery follow-up from Dr. Nirav`;
+        ? `A 1-week follow-up on your delivered order`
+        : `A 2-week follow-up on your Hope & Heal products`;
 
     const bodyText = emailType === '7d'
-        ? `Hello ${firstName},\n\nIt has been a week since your consultation and prescribed remedies. We hope you are beginning to experience the gentle, restorative benefits of your homeopathic care.\n\nCould you take a quick moment to share your feedback on Google? Your honest review helps others looking for natural healing and authentic homeopathic care find our clinic.\n\nWarm regards,\nDr. Nirav Khunt\nHope & Heal Homoeopathy Clinic`
-        : `Hello ${firstName},\n\nWe are checking in to see how your treatment and remedies have been supporting you over the past two weeks.\n\nIf Hope & Heal has made a positive difference in your skin, hair, or overall wellness, we would be deeply grateful if you could share your experience on Google.\n\nWarm regards,\nDr. Nirav Khunt\nHope & Heal Homoeopathy Clinic`;
+        ? `Hello ${firstName},\n\nIt has been a week since your order was delivered, and we hope you are enjoying your products:${productsBlock}\n\nCould you take a quick moment to share your experience on Google? Your honest review helps others looking for authentic natural care find our clinic and products.\n\nWarm regards,\nDr. Nirav Khunt\nHope & Heal Homoeopathy Clinic`
+        : `Hello ${firstName},\n\nWe are checking in to see how your recent order is working for you:${productsBlock}\n\nIf our natural homeopathic products have made a positive difference for you, we would be deeply grateful if you could share a brief review on Google.\n\nWarm regards,\nDr. Nirav Khunt\nHope & Heal Homoeopathy Clinic`;
 
     const params = {
         to_name: firstName,
@@ -153,11 +156,26 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Valid customer email is required' });
         }
 
+        let products = req.body.products;
+        let total = req.body.total;
+        if (!products) {
+            try {
+                const orders = await readOrders(100);
+                const match = orders.find(o => o.ID === orderId || (o.ID && o.ID.includes(orderId)) || (orderId && orderId.includes(o.ID)));
+                if (match) {
+                    products = match.Products;
+                    total = match.Total;
+                }
+            } catch (_) {}
+        }
+
         const sent = await sendReviewEmail({
-            customerName: customerName || 'Patient',
+            customerName: customerName || 'Customer',
             customerEmail,
             orderId,
-            emailType
+            emailType,
+            products,
+            total
         });
 
         if (sent) {
@@ -215,6 +233,7 @@ export default async function handler(req, res) {
                         customerEmail: email,
                         orderId,
                         emailType: '7d',
+                        products: order.Products,
                         total: order.Total
                     });
 
@@ -237,6 +256,7 @@ export default async function handler(req, res) {
                         customerEmail: email,
                         orderId,
                         emailType: '14d',
+                        products: order.Products,
                         total: order.Total
                     });
 
