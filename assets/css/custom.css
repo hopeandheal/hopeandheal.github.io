@@ -55,6 +55,22 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 85px;
+}
+
+section[id],
+div[id],
+.contact-section,
+#about,
+#team-1-uqUIPDdYEs,
+#contact,
+#about-us-7-uqUIPDcgkx,
+#contacts-11-uqUIPDiEca {
+  scroll-margin-top: 85px !important;
+}
+
 body {
   font-family: var(--font-sans);
   color: var(--ink);
@@ -214,34 +230,114 @@ section {
 /* Mobile navbar */
 @media (max-width: 991px) {
   .navbar {
-    border-radius: 1rem;
-    margin: 10px !important; /* Match desktop gap */
-    width: calc(100% - 20px);
+    border-radius: 1.1rem !important;
+    margin: 10px auto !important;
+    width: calc(100% - 20px) !important;
+    max-width: 100% !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+    border: 1px solid rgba(221, 230, 187, 0.8) !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    z-index: 1050 !important;
   }
 
-  .navbar-collapse {
-    background: rgba(255, 255, 255, 0.98);
-    border-radius: 0.9rem;
-    padding: 1rem;
-    margin-top: 0.75rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  .navbar.opened,
+  .navbar-dropdown.opened,
+  body.navbar-dropdown-open .navbar {
+    background: #ffffff !important;
+    border-radius: 1.25rem !important;
+    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.22) !important;
+  }
+
+  .navbar-collapse,
+  .cid-uqUIPDaTUN .navbar-collapse {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    background: #ffffff !important;
+    opacity: 1 !important;
+    z-index: 1050 !important;
+    border: none !important;
+    padding: 0.75rem 0.5rem 0.5rem !important;
+    margin-top: 0.5rem !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.07) !important;
+    border-radius: 0 0 1rem 1rem !important;
+    box-shadow: none !important;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+
+  .nav-dropdown .nav-item {
+    width: 100% !important;
+    margin: 0 !important;
+    list-style: none !important;
+  }
+
+  .nav-dropdown .nav-link {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    padding: 0.65rem 1rem !important;
+    font-size: 1.02rem !important;
+    font-weight: 600 !important;
+    color: var(--ink) !important;
+    border-radius: 8px !important;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
+  }
+
+  .nav-dropdown .nav-link:hover,
+  .nav-dropdown .nav-link:active {
+    background-color: var(--green-pale) !important;
+    color: var(--green-dark) !important;
+    transform: translateX(4px);
   }
 
   .navbar-buttons.mbr-section-btn {
     display: flex !important;
     flex-direction: column !important;
-    gap: 0.5rem !important;
-    padding: 0.5rem 0 !important;
+    gap: 0.6rem !important;
+    padding: 0.75rem 0 0.25rem !important;
     width: 100% !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+    margin-top: 0.5rem !important;
   }
 
   .navbar-buttons .btn,
   .navbar-buttons .btn-order-online,
   .navbar-buttons a {
     width: 100% !important;
+    margin: 0 !important;
+    padding: 0.75rem 1.25rem !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
     text-align: center !important;
     justify-content: center !important;
+    border-radius: var(--r-btn) !important;
   }
+}
+
+/* Mobile Nav Backdrop Overlay */
+.nav-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1025;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+body.navbar-dropdown-open .nav-backdrop {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* ══════════════════════════════

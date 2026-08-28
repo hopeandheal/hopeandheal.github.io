@@ -264,6 +264,9 @@ const server = http.createServer(async (req, res) => {
         let filePath = path === '/' ? '/index.html' : path;
         filePath = pathMod.join(process.cwd(), filePath);
 
+        if (!fs.existsSync(filePath) && fs.existsSync(filePath + '.html')) {
+            filePath = filePath + '.html';
+        }
         try {
             const stat = fs.statSync(filePath);
             if (stat.isDirectory()) {
