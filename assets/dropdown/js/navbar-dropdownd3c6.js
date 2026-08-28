@@ -1,25 +1,9 @@
 /**
  * navbar-dropdown.js — Hope & Heal Navigation Controller
- * Handles mobile collapse, auto-closing on item click, backdrop overlay, and accurate smooth scrolling.
+ * Handles mobile collapse, auto-closing on item click, and accurate smooth scrolling.
  */
 !function() {
-    // 1. Inject or manage backdrop overlay
-    function ensureBackdrop() {
-        if (!document.querySelector('.nav-backdrop')) {
-            const backdrop = document.createElement('div');
-            backdrop.className = 'nav-backdrop';
-            document.body.appendChild(backdrop);
-            backdrop.addEventListener('click', closeMobileNav);
-        }
-    }
-
-    if (document.readyState !== 'loading') {
-        ensureBackdrop();
-    } else {
-        document.addEventListener('DOMContentLoaded', ensureBackdrop);
-    }
-
-    // 2. Helper to close mobile menu
+    // 1. Helper to close mobile menu
     function closeMobileNav() {
         const collapseEl = document.querySelector('#navbarSupportedContent');
         if (collapseEl && collapseEl.classList.contains('show')) {
