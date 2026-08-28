@@ -229,7 +229,8 @@ section {
 
 /* Mobile navbar */
 @media (max-width: 991px) {
-  .navbar {
+  .navbar,
+  .cid-uqUIPDaTUN .navbar {
     border-radius: 1.1rem !important;
     margin: 10px auto !important;
     width: calc(100% - 20px) !important;
@@ -241,6 +242,7 @@ section {
     border: 1px solid rgba(221, 230, 187, 0.8) !important;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
     z-index: 1050 !important;
+    padding: 0.5rem 1rem !important;
   }
 
   .navbar.opened,
@@ -251,32 +253,98 @@ section {
     box-shadow: 0 16px 45px rgba(0, 0, 0, 0.22) !important;
   }
 
+  .navbar .container,
+  .navbar-dropdown .container,
+  .cid-uqUIPDaTUN .navbar .container {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .navbar-brand,
+  .cid-uqUIPDaTUN .navbar-brand {
+    display: flex !important;
+    align-items: center !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+  }
+
+  .navbar-caption-wrap,
+  .navbar-caption,
+  .cid-uqUIPDaTUN .navbar-caption {
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    display: inline-block !important;
+    line-height: 1.2 !important;
+  }
+
+  .navbar-toggler,
+  .cid-uqUIPDaTUN button.navbar-toggler {
+    flex: 0 0 auto !important;
+    margin: 0 0 0 auto !important;
+    align-self: center !important;
+  }
+
   .navbar-collapse,
-  .cid-uqUIPDaTUN .navbar-collapse {
+  .cid-uqUIPDaTUN .navbar-collapse,
+  .cid-uqUIPDaTUN .navbar .navbar-collapse {
+    flex-basis: 100% !important;
+    width: 100% !important;
+    min-width: 100% !important;
     position: relative !important;
     top: auto !important;
     left: auto !important;
-    width: 100% !important;
+    right: auto !important;
     background: #ffffff !important;
     opacity: 1 !important;
     z-index: 1050 !important;
     border: none !important;
-    padding: 0.75rem 0.5rem 0.5rem !important;
+    padding: 0.75rem 0 0.5rem !important;
     margin-top: 0.5rem !important;
-    border-top: 1px solid rgba(0, 0, 0, 0.07) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
     border-radius: 0 0 1rem 1rem !important;
     box-shadow: none !important;
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
+    max-height: calc(100vh - 120px) !important;
+    overflow-y: auto !important;
   }
 
-  .nav-dropdown .nav-item {
+  .nav-dropdown,
+  .navbar-nav.nav-dropdown,
+  .cid-uqUIPDaTUN .navbar-nav {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    position: static !important;
+    transform: none !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .nav-dropdown .nav-item,
+  .cid-uqUIPDaTUN .navbar-nav .nav-item {
     width: 100% !important;
     margin: 0 !important;
     list-style: none !important;
+    padding: 0 !important;
   }
 
-  .nav-dropdown .nav-link {
+  .nav-dropdown .nav-link,
+  .cid-uqUIPDaTUN .navbar-nav .nav-item .nav-link {
     display: flex !important;
     align-items: center !important;
     width: 100% !important;
@@ -289,18 +357,21 @@ section {
   }
 
   .nav-dropdown .nav-link:hover,
-  .nav-dropdown .nav-link:active {
+  .nav-dropdown .nav-link:active,
+  .cid-uqUIPDaTUN .navbar-nav .nav-item .nav-link:hover {
     background-color: var(--green-pale) !important;
     color: var(--green-dark) !important;
     transform: translateX(4px);
   }
 
-  .navbar-buttons.mbr-section-btn {
+  .navbar-buttons.mbr-section-btn,
+  .cid-uqUIPDaTUN .navbar-buttons {
     display: flex !important;
     flex-direction: column !important;
     gap: 0.6rem !important;
     padding: 0.75rem 0 0.25rem !important;
     width: 100% !important;
+    min-width: 100% !important;
     border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
     margin-top: 0.5rem !important;
   }
@@ -326,9 +397,9 @@ section {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   z-index: 1025;
   opacity: 0;
   pointer-events: none;

@@ -80,3 +80,22 @@ git add .
 git commit -m "Your message"
 git push origin main
 ```
+
+---
+
+## 📱 Mobile Navigation System & Architecture Details (Added August 2026)
+
+### 1. Navigation Structure & Behavior
+- **Floating Pill Navbar**: Managed across `index.html`, `order.html`, and `assets/css/custom.css`.
+- **Mobile Dropdown Card**: On screens $\le 991\text{px}$, `#navbarSupportedContent` (class `.navbar-collapse`) renders as a solid opaque card (`background: #ffffff !important; opacity: 1 !important; z-index: 1050 !important;`) directly beneath the pill navbar.
+- **Backdrop Overlay (`.nav-backdrop`)**: Injected into the DOM to softly dim the background when the menu is opened.
+- **Auto-Closing**: Governed by `assets/dropdown/js/navbar-dropdownd3c6.js`. Clicking ANY navigation item (`.nav-link`, `Order Online`, `Book Appointment`) or tapping the backdrop immediately triggers `bootstrap.Collapse.hide()` and resets `aria-expanded="false"` and `body.navbar-dropdown-open`.
+- **Smooth Scroll & Navbar Offset**: Set via `html { scroll-padding-top: 85px; }` and section IDs `scroll-margin-top: 85px !important;` to ensure hash navigation (`/#about`, `/#team-1-uqUIPDdYEs`, `/#contact`) lands accurately without titles being obscured by the floating navbar.
+
+### 2. Key Files for Mobile Navigation
+- `assets/dropdown/js/navbar-dropdownd3c6.js`: Navigation controller (backdrop injection, auto-close listener, offset calculation).
+- `assets/theme/js/scriptd3c6.js`: Mobirise core anchor click and scroll handler (offset set to 85px).
+- `assets/css/custom.css`: Modern design system tokens, floating pill rules, mobile navbar flex layout (`flex-basis: 100%`), and `.nav-backdrop`.
+- `assets/css/mbr-additionald3c6.css`: Mobirise overrides (set `.navbar-collapse` to `background: #ffffff !important; z-index: 1050 !important; flex-basis: 100% !important;`).
+- `index.html` & `order.html`: Asset version strings (`v=3.2`) for immediate cache invalidation.
+
